@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NYC Crime Dashboard</title>
+  <style>
+    :root {
+      --bg-dark: #121212;
+      --card-dark: #1e1e1e;
+      --text-dark: #e0e0e0;
+      --border-dark: #333;
+      --highlight: #e74c3c;
+      --increase: #ff6b6b;
+      --decrease: #51cf66;
+      --confidence-high: #51cf66;
+      --confidence-med: #fcc419;
+      --confidence-low: #ff6b6b;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-dark);
+      height: 100vh;
+      padding: 15px;
+    }
+    .dashboard {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    .filters {
+      display: flex;
+      gap: 10px;
+    }
+    select {
+      padding: 8px 12px;
+      border-radius: 4px;
+      border: 1px solid var(--border-dark);
+      background-color: var(--card-dark);
+      color: var(--text-dark);
+      font-size: 14px;
+    }
+    .main-content {
+      display: flex;
+      flex: 1;
+      gap: 15px;
+    }
+    .map-section {
+      flex: 2;
+      display: flex;
+      flex-direction: column;
+    }
+    .map-container {
+      height: 60%;
+      background-color: var(--card-dark);
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--border-dark);
+    }
+    .map {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      transform-origin: center center;
+      transition: transform 0.2s ease;
+    }
+    .bottom-cards {
+      display: flex;
+      gap: 15px;
+      margin-top: 15px;
+      height: 35%;
+    }
+    .right-cards {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    .card {
+      background-color: var(--card-dark);
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      border: 1px solid var(--border-dark);
+      transition: transform 0.2s ease;
+    }
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 8px rgba(0,0,0,0.4);
+    }
+    .flagged {
+      border: 2px solid var(--highlight);
+      box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.3);
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.4); }
+      70% { box-shadow: 0 0 0 10px rgba(231, 76, 60, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); }
+    }
+    .flag-icon {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      color: var(--highlight);
+      font-size: 16px;
+    }
+    .graph-selector {
+      position: absolute;
+      top: 10px;
+      right: 35px;
+    }
+    .graph-selector select {
+      padding: 4px 8px;
+      font-size: 12px;
+      border-radius: 3px;
+    }
+    .bottom-card {
+      flex: 1;
+    }
+    .right-card {
+      flex: 1;
+    }
+    .card-title {
+      font-weight: bold;
+      margin-bottom: 10px;
+      color: var(--text-dark);
+      font-size: 16px;
+    }
+    .graph-container {
+      flex: 1;
+      background-color: #2a2a2a;
+      border-radius: 4px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      border: 1px solid var(--border-dark);
+    }
+    .graph {
+      width: 100%;
+      height: 100%;
+    }
+    .crime-stats {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .crime-count {
+      font-size: 24px;
+      font-weight: bold;
+    }
+    .crime-change {
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+    }
+    .increase {
+      color: var(--increase);
+    }
+    .decrease {
+      color: var(--decrease);
+    }
+    .confidence {
+      display: flex;
+      align-items: center;
+      margin-top: 8px;
+    }
+    .confidence-label {
+      font-size: 12px;
+      margin-right: 8px;
+      color: #aaa;
+    }
+    .confidence-value {
+      font-weight: bold;
+      margin-right: 8px;
+      width: 40px;
+      text-align: right;
+    }
+    .confidence-bar {
+      flex: 1;
+      height: 8px;
+      background-color: #333;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .confidence-level {
+      height: 100%;
+    }
+    .high-confidence {
+      background-color: var(--confidence-high);
+      width: 90%;
+    }
+    .med-confidence {
+      background-color: var(--confidence-med);
+      width: 70%;
+    }
+    .low-confidence {
+      background-color: var(--confidence-low);
+      width: 50%;
+    }
+    .flag-reason {
+      font-size: 12px;
+      color: #aaa;
+      margin-top: 8px;
+      padding: 8px;
+      background-color: #2a2a2a;
+      border-radius: 4px;
+      border-left: 3px solid var(--highlight);
+    }
+    .hotspot-marker {
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      background-color: rgba(255,0,0,0.3);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .hotspot-marker::after {
+      content: "★";
+      color: red;
+      font-size: 16px;
+    }
+    .zoom-controls {
+      position: absolute;
+      bottom: 15px;
+      right: 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      z-index: 10;
+    }
+    .zoom-btn {
+      width: 32px;
+      height: 32px;
+      background: var(--card-dark);
+      border: 1px solid var(--border-dark);
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 14px;
+      color: var(--text-dark);
+    }
+    .zoom-btn:hover {
+      background: #333;
+    }
+    .legend {
+      position: absolute;
+      bottom: 15px;
+      left: 15px;
+      background: rgba(30,30,30,0.9);
+      padding: 10px;
+      border-radius: 4px;
+      font-size: 12px;
+      border: 1px solid var(--border-dark);
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 5px;
+    }
+    .legend-color {
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+      margin-right: 8px;
+    }
+    .burglary { background: #e67e22; }
+    .larceny { background: #2ecc71; }
+    /* New styles for transparency sections */
+    .transparency-section {
+      margin-top: 20px;
+      padding: 15px;
+      background-color: var(--card-dark);
+      border-radius: 8px;
+      border: 1px solid var(--border-dark);
+    }
+    .transparency-section h2 {
+      font-size: 18px;
+      margin-bottom: 10px;
+      color: var(--text-dark);
+    }
+    .transparency-section table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 10px;
+    }
+    .transparency-section th, .transparency-section td {
+      border: 1px solid var(--border-dark);
+      padding: 8px;
+      text-align: left;
+      font-size: 12px;
+      color: var(--text-dark);
+    }
+    .transparency-section th {
+      background-color: #2a2a2a;
+    }
+    .transparency-section ul {
+      list-style-type: disc;
+      margin-left: 20px;
+      font-size: 12px;
+      color: var(--text-dark);
+    }
+    .transparency-section p {
+      font-size: 12px;
+      color: var(--text-dark);
+      margin-bottom: 10px;
+    }
+    .transparency-section a {
+      color: var(--highlight);
+      text-decoration: none;
+    }
+    .transparency-section a:hover {
+      text-decoration: underline;
+    }
+  </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+  <div class="dashboard">
+    <div class="header">
+      <h2>NYC Crime Map</h2>
+      <div class="filters">
+        <select>
+          <option>Citywide</option>
+          <option selected>Bronx</option>
+          <option>Brooklyn</option>
+          <option>Queens</option>
+          <option>Manhattan</option>
+          <option>Staten Island</option>
+        </select>
+        <select>
+          <option>All Crimes</option>
+          <option>Rape</option>
+          <option>Robbery</option>
+          <option selected>Property Crimes</option>
+          <option>Grand Larceny</option>
+        </select>
+        <select>
+          <option>Last 7 Days</option>
+          <option>Last 28 Days</option>
+          <option>Year to Date</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Navigation Links -->
+    <nav>
+      <ul style="display: flex; gap: 15px; list-style: none; margin-bottom: 15px;">
+        <li><a href="index.html" style="color: var(--highlight); text-decoration: none;">Home</a></li>
+        <li><a href="/Scripts/Analyst.html" style="color: var(--highlight); text-decoration: none;">Analysis</a></li>
+        <li><a href="/Scripts/deployment.html" style="color: var(--highlight); text-decoration: none;">Deployment</a></li>
+      </ul>
+    </nav>
+
+    <div class="main-content">
+      <div class="map-section">
+        <div class="map-container">
+          <img src="/Assets/new_york.png" alt="NYC Crime Heatmap" class="map" id="crime-map">
+          <div class="hotspot-marker" style="top: 30%; left: 40%;"></div>
+          <div class="hotspot-marker" style="top: 60%; left: 25%;"></div>
+          <div class="zoom-controls">
+            <div class="zoom-btn" id="zoom-in"><i class="fas fa-plus"></i></div>
+            <div class="zoom-btn" id="zoom-out"><i class="fas fa-minus"></i></div>
+          </div>
+        </div>
+
+        <div class="bottom-cards">
+          <div class="card bottom-card flagged">
+            <div class="flag-icon"><i class="fas fa-exclamation-triangle"></i></div>
+            <div class="graph-selector">
+              <select data-card="property-crimes">
+                <option>Bar Graph</option>
+                <option>Line Graph</option>
+              </select>
+            </div>
+            <div class="card-title">Felony Assault</div>
+            <div class="graph-container">
+              <canvas id="property-crimes-graph" class="graph"></canvas>
+            </div>
+            <div class="crime-stats">
+              <div class="crime-count">12</div>
+              <div class="crime-change decrease">
+                <i class="fas fa-arrow-down"></i> 3% vs previous period
+              </div>
+            </div>
+            <div class="confidence">
+              <span class="confidence-label">Confidence:</span>
+              <span class="confidence-value">87%</span>
+              <div class="confidence-bar">
+                <div class="confidence-level high-confidence"></div>
+              </div>
+            </div>
+            <div class="flag-reason">
+              <strong>Why Flagged:</strong> Seasonal pattern detected with 87% confidence. Historical data shows consistent increases in property crimes during this period over the past 3 years.
+            </div>
+          </div>
+
+          <div class="card bottom-card">
+            <div class="graph-selector">
+              <select data-card="grand-larceny">
+                <option>Bar Graph</option>
+                <option>Line Graph</option>
+              </select>
+            </div>
+            <div class="card-title">Murder</div>
+            <div class="graph-container">
+              <canvas id="grand-larceny-graph" class="graph"></canvas>
+            </div>
+            <div class="crime-stats">
+              <div class="crime-count">241</div>
+              <div class="crime-change decrease">
+                <i class="fas fa-arrow-down"></i> 3% vs previous period
+              </div>
+            </div>
+            <div class="confidence">
+              <span class="confidence-label">Confidence:</span>
+              <span class="confidence-value">72%</span>
+              <div class="confidence-bar">
+                <div class="confidence-level med-confidence"></div>
+              </div>
+            </div>
+            <div class="flag-reason">
+              <strong>Analysis:</strong> 72% confidence in downward trend due to increased police presence in high-risk areas.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="right-cards">
+        <div class="card right-card">
+          <div class="graph-selector">
+            <select data-card="rape">
+              <option>Bar Graph</option>
+              <option>Line Graph</option>
+            </select>
+          </div>
+          <div class="card-title">Rape</div>
+          <div class="graph-container">
+            <canvas id="rape-graph" class="graph"></canvas>
+          </div>
+          <div class="crime-stats">
+            <div class="crime-count">470</div>
+            <div class="crime-change increase">
+              <i class="fas fa-arrow-up"></i> 3% vs previous period
+            </div>
+          </div>
+          <div class="confidence">
+            <span class="confidence-label">Confidence:</span>
+            <span class="confidence-value">91%</span>
+            <div class="confidence-bar">
+              <div class="confidence-level high-confidence"></div>
+            </div>
+          </div>
+          <div class="flag-reason">
+            <strong>Analysis:</strong> 91% confidence in upward trend based on consistent reporting patterns and verified cases.
+          </div>
+        </div>
+
+        <div class="card right-card">
+          <div class="graph-selector">
+            <select data-card="robbery">
+              <option>Bar Graph</option>
+              <option>Line Graph</option>
+            </select>
+          </div>
+          <div class="card-title">Robbery</div>
+          <div class="graph-container">
+            <canvas id="robbery-graph" class="graph"></canvas>
+          </div>
+          <div class="crime-stats">
+            <div class="crime-count">63</div>
+            <div class="crime-change decrease">
+              <i class="fas fa-arrow-down"></i> 3% vs previous period
+            </div>
+          </div>
+          <div class="confidence">
+            <span class="confidence-label">Confidence:</span>
+            <span class="confidence-value">68%</span>
+            <div class="confidence-bar">
+              <div class="confidence-level med-confidence"></div>
+            </div>
+          </div>
+          <div class="flag-reason">
+            <strong>Analysis:</strong> 68% confidence due to preliminary data showing reduced incidents in 3 precincts.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Data Sources Section -->
+    <div class="transparency-section" id="data-sources">
+      <h2>Data Sources</h2>
+      <table>
+        <tr>
+          <th>Crime Type</th>
+          <th>Date</th>
+          <th>Precinct</th>
+          <th>Count</th>
+          <th>Source</th>
+          <th>Weight</th>
+        </tr>
+        <tr>
+          <td>Robbery</td>
+          <td>2025-05-24</td>
+          <td>Precinct 12</td>
+          <td>15</td>
+          <td>NYPD Crime Reports [1]</td>
+          <td>0.85</td>
+        </tr>
+        <tr>
+          <td>Property Crime</td>
+          <td>2025-05-24</td>
+          <td>Precinct 10</td>
+          <td>42</td>
+          <td>NYPD Crime Reports [1]</td>
+          <td>0.85</td>
+        </tr>
+        <tr>
+          <td>Murder</td>
+          <td>2025-05-24</td>
+          <td>Precinct 12</td>
+          <td>2</td>
+          <td>NYPD Crime Reports [1]</td>
+          <td>0.85</td>
+        </tr>
+        <tr>
+          <td>Rape</td>
+          <td>2025-05-24</td>
+          <td>Precinct 10</td>
+          <td>8</td>
+          <td>NYPD Crime Reports [1]</td>
+          <td>0.85</td>
+        </tr>
+        <tr>
+          <td>Grand Larceny</td>
+          <td>2025-05-24</td>
+          <td>Precinct 12</td>
+          <td>25</td>
+          <td>NYPD Crime Reports [1]</td>
+          <td>0.85</td>
+        </tr>
+        <tr>
+          <td>Weather Factor</td>
+          <td>2025-05-24</td>
+          <td>Citywide</td>
+          <td>Rainy</td>
+          <td>Weather Data [4]</td>
+          <td>0.10</td>
+        </tr>
+        <tr>
+          <td>Economic Index</td>
+          <td>2025-05-24</td>
+          <td>Citywide</td>
+          <td>3.2</td>
+          <td>Economic Indicators [5]</td>
+          <td>0.05</td>
+        </tr>
+      </table>
+      <p><strong>References:</strong></p>
+      <ul>
+        <li>[1] NYPD Historical Crime Reports (2018-2023)</li>
+        <li>[4] Weather Data Correlation Analysis</li>
+        <li>[5] Economic Indicator Correlations</li>
+      </ul>
+    </div>
+
+    <!-- Graph Generation Section -->
+    <div class="transparency-section">
+      <h2>How Graphs Are Generated</h2>
+      <p>The AI processes raw crime data to create visualizations:</p>
+      <ol>
+        <li><strong>Data Collection</strong>: Aggregates crime counts from NYPD reports, as shown in the Data Sources table.</li>
+        <li><strong>Normalization</strong>: Adjusts counts based on precinct population (e.g., crimes per 100,000 residents).</li>
+        <li><strong>Visualization</strong>: Uses Canvas API to plot bar graphs (crime counts) or line graphs (trends over time).</li>
+      </ol>
+      <p><strong>Example</strong>: For Robbery in Precinct 12 (15 incidents, 100,000 residents) and Precinct 10 (10 incidents, 80,000 residents), the AI normalizes to 15 and 12.5 per 100,000, then plots bars or lines using the Canvas API, as implemented in the JavaScript code.</p>
+    </div>
+
+    <!-- Deployment Recommendations Section -->
+    <div class="transparency-section">
+      <h2>AI Deployment Recommendations</h2>
+      <p>The AI uses crime data and historical patterns to recommend resource allocations (e.g., patrol units, detective teams) for specific areas like the Financial District or Residential Zone. See the <a href="deployment.html">Deployment Page</a> for details.</p>
+      <p><strong>Process</strong>:</p>
+      <ul>
+        <li>Data from NYPD reports and external factors (e.g., weather) are analyzed, as shown in the Data Sources table.</li>
+        <li>Confidence levels (e.g., 89% for Financial District) are calculated using historical trends and recent data.</li>
+        <li>Recommendations are generated, such as deploying 2 patrol units from 18:00-02:00 based on a 73% increase in robbery patterns.</li>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    // Sample data for graphs (replace with real data as needed)
+    const graphData = {
+      'property-crimes': [10, 15, 12, 8, 12],
+      'grand-larceny': [200, 220, 230, 240, 241],
+      'rape': [450, 460, 465, 468, 470],
+      'robbery': [70, 68, 65, 64, 63]
+    };
+
+    // Colors for each graph
+    const graphColors = {
+      'property-crimes': '#e67e22',
+      'grand-larceny': '#2ecc71',
+      'rape': '#e74c3c',
+      'robbery': '#3498db'
+    };
+
+    // Function to draw bar graph
+    function drawBarGraph(canvasId, data, color) {
+      const canvas = document.getElementById(canvasId);
+      const ctx = canvas.getContext('2d');
+      const width = canvas.width;
+      const height = canvas.height;
+
+      // Clear canvas
+      ctx.clearRect(0, 0, width, height);
+
+      // Find max value for scaling
+      const maxValue = Math.max(...data);
+      const barWidth = width / data.length;
+      const padding = 10;
+
+      // Draw bars
+      ctx.fillStyle = color;
+      data.forEach((value, index) => {
+        const barHeight = (value / maxValue) * (height - 20);
+        ctx.fillRect(
+          index * barWidth + padding / 2,
+          height - barHeight,
+          barWidth - padding,
+          barHeight
+        );
+      });
+
+      // Draw axes
+      ctx.strokeStyle = '#aaa';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(0, height);
+      ctx.lineTo(width, height);
+      ctx.moveTo(0, 0);
+      ctx.lineTo(0, height);
+      ctx.stroke();
+    }
+
+    // Function to draw line graph
+    function drawLineGraph(canvasId, data, color) {
+      const canvas = document.getElementById(canvasId);
+      const ctx = canvas.getContext('2d');
+      const width = canvas.width;
+      const height = canvas.height;
+
+      // Clear canvas
+      ctx.clearRect(0, 0, width, height);
+
+      // Find max value for scaling
+      const maxValue = Math.max(...data);
+      const stepX = width / (data.length - 1);
+
+      // Draw line
+      ctx.beginPath();
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 2;
+      data.forEach((value, index) => {
+        const x = index * stepX;
+        const y = height - (value / maxValue) * (height - 20);
+        if (index === 0) {
+          ctx.moveTo(x, y);
+        } else {
+          ctx.lineTo(x, y);
+        }
+      });
+      ctx.stroke();
+
+      // Draw points
+      ctx.fillStyle = color;
+      data.forEach((value, index) => {
+        const x = index * stepX;
+        const y = height - (value / maxValue) * (height - 20);
+        ctx.beginPath();
+        ctx.arc(x, y, 3, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      // Draw axes
+      ctx.strokeStyle = '#aaa';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(0, height);
+      ctx.lineTo(width, height);
+      ctx.moveTo(0, 0);
+      ctx.lineTo(0, height);
+      ctx.stroke();
+    }
+
+    // Initialize graphs
+    function initializeGraphs() {
+      document.querySelectorAll('.graph-selector select').forEach(select => {
+        const cardId = select.getAttribute('data-card');
+        const canvasId = `${cardId}-graph`;
+        const drawGraph = () => {
+          const graphType = select.value;
+          const data = graphData[cardId];
+          const color = graphColors[cardId];
+          if (graphType === 'Bar Graph') {
+            drawBarGraph(canvasId, data, color);
+          } else if (graphType === 'Line Graph') {
+            drawLineGraph(canvasId, data, color);
+          }
+        };
+        drawGraph();
+        select.addEventListener('change', drawGraph);
+      });
+    }
+
+    // Zoom functionality
+    const map = document.getElementById('crime-map');
+    let currentScale = 1;
+
+    document.getElementById('zoom-in').addEventListener('click', function() {
+      currentScale += 0.1;
+      map.style.transform = `scale(${currentScale})`;
+    });
+
+    document.getElementById('zoom-out').addEventListener('click', function() {
+      currentScale = Math.max(1, currentScale - 0.1);
+      map.style.transform = `scale(${currentScale})`;
+    });
+
+    // Initialize on load
+    window.addEventListener('load', initializeGraphs);
+  </script>
+</body>
+</html>
