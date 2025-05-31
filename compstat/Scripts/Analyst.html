@@ -1,0 +1,1170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NYC Crime Distribution</title>
+  <style>
+    :root {
+      --bg-dark: #121212;
+      --card-dark: #1e1e1e;
+      --text-dark: #e0e0e0;
+      --border-dark: #333;
+      --highlight: #e74c3c;
+      --confidence-high: #51cf66;
+      --confidence-med: #fcc419;
+      --confidence-low: #ff6b6b;
+    }
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-dark);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      padding: 15px;
+    }
+    h1, h2, h3, h4 {
+      color: var(--text-dark);
+    }
+    section {
+      margin-bottom: 20px;
+    }
+    .filters {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+      flex-wrap: wrap;
+    }
+    select, input[type="date"] {
+      padding: 8px 12px;
+      border-radius: 4px;
+      border: 1px solid var(--border-dark);
+      background-color: var(--card-dark);
+      color: var(--text-dark);
+      font-size: 14px;
+    }
+    .custom-date-range {
+      display: none;
+      gap: 10px;
+    }
+    .analysis-container {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+    .left-section, .right-section {
+      flex: 1;
+    }
+    .left-section {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    .right-section {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    .heatmap-container {
+      height: 500px;
+      background-color: var(--card-dark);
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--border-dark);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .heatmap-image {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+    .info-button {
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      background-color: var(--highlight);
+      color: var(--text-dark);
+      border: none;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      cursor: pointer;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .info-button:hover {
+      background-color: #c0392b;
+    }
+    .crime-alerts {
+      padding: 15px;
+      background-color: var(--card-dark);
+      border-radius: 8px;
+      border: 1px solid var(--border-dark);
+    }
+    .crime-alerts h3 {
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+    .crime-alerts ul {
+      list-style-type: disc;
+      margin-left: 20px;
+      font-size: 12px;
+    }
+    .graph-container {
+      height: 250px;
+      background-color: #2a2a2a;
+      border-radius: 4px;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--border-dark);
+    }
+    .graph-selector {
+      margin-bottom: 10px;
+    }
+    .confidence-card {
+      padding: 15px;
+      background-color: var(--card-dark);
+      border-radius: 8px;
+      border: 1px solid var(--border-dark);
+    }
+    .confidence-card h2 {
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+    .confidence-card p, .confidence-card ul {
+      font-size: 12px;
+      color: var(--text-dark);
+    }
+    .confidence-card a {
+      color: var(--highlight);
+      text-decoration: none;
+    }
+    .confidence-card a:hover {
+      text-decoration: underline;
+    }
+    .confidence-score {
+      font-size: 16px;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+    .transparency-section {
+      padding: 15px;
+      background-color: var(--card-dark);
+      border-radius: 8px;
+      border: 1px solid var(--border-dark);
+    }
+    nav ul {
+      display: flex;
+      gap: 15px;
+      list-style: none;
+      margin-bottom: 15px;
+    }
+    nav a {
+      color: var(--highlight);
+      text-decoration: none;
+    }
+    nav a:hover {
+      text-decoration: underline;
+    }
+    .popup-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: none;
+      z-index: 1000;
+    }
+    .heatmap-popup, .analysis-popup, .metrics-popup {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: var(--card-dark);
+      padding: 20px;
+      border-radius: 8px;
+      border: 1px solid var(--border-dark);
+      max-width: 500px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+      display: none;
+      z-index: 1001;
+    }
+    .popup-content h3 {
+      font-size: 16px;
+      margin-bottom: 10px;
+    }
+    .popup-content p, .popup-content ul {
+      font-size: 12px;
+      color: var(--text-dark);
+    }
+    .popup-content ul {
+      list-style-type: disc;
+      margin-left: 20px;
+    }
+    .popup-content table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 10px 0;
+    }
+    .popup-content th, .popup-content td {
+      border: 1px solid var(--border-dark);
+      padding: 8px;
+      font-size: 12px;
+      text-align: left;
+    }
+    .popup-content th {
+      background-color: #2a2a2a;
+    }
+    .close-button {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: none;
+      border: none;
+      color: var(--text-dark);
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .trigger-button {
+      background-color: var(--highlight);
+      color: var(--text-dark);
+      border: none;
+      padding: 8px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      margin-top: 10px;
+    }
+    .trigger-button:hover {
+      background-color: #c0392b;
+    }
+    .graph-label-x, .graph-label-y {
+      position: absolute;
+      color: #aaa;
+      font-size: 12px;
+    }
+    .graph-label-x {
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    .graph-label-y {
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%) rotate(-90deg);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>NYC Crime Distribution</h1>
+    <nav>
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="Analyst.html">Analysis</a></li>
+        <li><a href="deployment.html">Deployment</a></li>
+      </ul>
+    </nav>
+    <div class="filters">
+      <select id="crime-filter">
+        <option>Robbery</option>
+        <option>Property Crime</option>
+        <option>Grand Larceny</option>
+        <option>Burglary</option>
+        <option>Rape</option>
+        <option>Murder</option>
+      </select>
+      <select id="area-filter">
+        <option>Citywide</option>
+        <option>Bronx</option>
+        <option>Brooklyn</option>
+        <option>Queens</option>
+        <option>Manhattan</option>
+        <option>Staten Island</option>
+      </select>
+      <select id="time-filter">
+        <option>Past 7 Days</option>
+        <option>Past Month</option>
+        <option>Past Year</option>
+        <option>Past 5 Years</option>
+        <option>Custom</option>
+      </select>
+      <div class="custom-date-range" id="custom-date-range">
+        <input type="date" id="start-date">
+        <input type="date" id="end-date">
+      </div>
+    </div>
+  </header>
+
+  <section>
+    <h2>Crime Analysis</h2>
+    <div class="analysis-container">
+      <div class="left-section">
+        <div class="heatmap-container">
+          <img src="/Assets/compstatMapHeat.png" alt="NYC Crime Heatmap" class="heatmap-image">
+          <button class="info-button" onclick="showHeatmapPopup()">?</button>
+        </div>
+      </div>
+      <div class="right-section">
+        <div>
+          <div class="graph-selector">
+            <select id="graph-type">
+              <option>Line Graph</option>
+              <option>Bar Graph</option>
+            </select>
+          </div>
+          <div class="graph-container">
+            <canvas id="crime-trend-graph" width="600" height="250"></canvas>
+            <div class="graph-label-x" id="graph-label-x"></div>
+            <div class="graph-label-y">Incident Count</div>
+          </div>
+        </div>
+        <div class="confidence-card">
+          <h2>Analysis Overview</h2>
+          <p class="confidence-score" id="confidence-score">Confidence: 68%</p>
+          <p id="reasoning-summary">The model identified a 23% increase in robbery incidents based on historical patterns from the past 5 years [1].</p>
+          <button class="trigger-button" onclick="showAnalysisPopup()">View Detailed AI Analysis</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Effectiveness Metrics</h2>
+    <p>This model has demonstrated 92% accuracy in predicting robbery hotspots when tested against 2022 data. Key effectiveness indicators:</p>
+    <ul>
+      <li>Precision: 89% (correctly identified hotspots)</li>
+      <li>Recall: 84% (actual hotspots identified)</li>
+      <li>False Positive Rate: 11% [7]</li>
+    </ul>
+    <button class="trigger-button" onclick="showMetricsPopup()">How Metrics Are Calculated</button>
+  </section>
+
+  <section>
+    <h2>Submit Your Feedback</h2>
+    <form>
+      <label>Your Name</label>
+      <input type="text">
+      <label>Your Role</label>
+      <select>
+        <option>Select role...</option>
+        <option>Analyst</option>
+        <option>Commander</option>
+        <option>Officer</option>
+        <option>Community Member</option>
+        <option>Other</option>
+      </select>
+      <label>Feedback Type</label>
+      <select>
+        <option>Select type...</option>
+        <option>Accuracy</option>
+        <option>Suggestion</option>
+        <option>Question</option>
+        <option>Bug Report</option>
+        <option>Other</option>
+      </select>
+      <label>Your Feedback</label>
+      <textarea></textarea>
+      <button>Submit Feedback</button>
+      <p>Thank you for your feedback! It has been submitted successfully.</p>
+    </form>
+  </section>
+
+  <section>
+    <h2>Reference Documentation</h2>
+    <div>
+      <p>Refer to the <a href="index.html#data-sources">Data Sources</a> section for a complete list of data sources and their weights.</p>
+    </div>
+  </section>
+
+  <div class="popup-overlay" id="popup-overlay"></div>
+  <div class="heatmap-popup" id="heatmap-popup">
+    <button class="close-button" onclick="hideHeatmapPopup()">×</button>
+    <div class="popup-content">
+      <h3>AI Heatmap Generation</h3>
+      <p><strong>AI Filtering:</strong> The AI uses the DBSCAN clustering algorithm to identify high-density crime areas based on geolocation data from NYPD crime reports. Robbery incidents are filtered by frequency and proximity within precincts.</p>
+      <p><strong>Data for Color Gradient:</strong> Incident counts per precinct from NYPD crime reports (2018-2023) are normalized to a 0-1 scale. Higher counts indicate higher crime density.</p>
+      <p><strong>Gradient Calculation:</strong> Normalized incident counts are mapped to a red-to-blue gradient:
+      <ul>
+        <li>Red: High density (top 20% of incidents)</li>
+        <li>Yellow: Medium density (middle 60%)</li>
+        <li>Blue: Low density (bottom 20%)</li>
+      </ul>
+      The gradient is rendered using a linear interpolation of RGB values.</p>
+      <h3>How Confidence Levels Are Calculated</h3>
+      <p>The AI calculates confidence levels using the following formula:</p>
+      <p><strong>Confidence Level (%) = (0.6 * Historical Trend Score) + (0.3 * Recent Data Match) + (0.1 * External Factors Correlation)</strong></p>
+      <p>Example for Robbery (68% confidence):</p>
+      <ul>
+        <li>Historical Trend Score: 75% (based on 5-year patterns from NYPD data)</li>
+        <li>Recent Data Match: 60% (based on recent precinct data)</li>
+        <li>External Factors: 80% (weather and economic correlations)</li>
+        <li>Calculation: (0.6 * 0.75) + (0.3 * 0.60) + (0.1 * 0.80) = 71% (rounded to 68%)</li>
+      </ul>
+      <p>This formula combines historical trends (e.g., seasonal patterns), recent data alignment, and external factors (e.g., weather, economic indicators) to assess prediction reliability.</p>
+      <h3>Data Sources & Weighting</h3>
+      <p>Primary Sources (85% weight):</p>
+      <table>
+        <tr>
+          <th>Data Source</th>
+          <th>Weight (%)</th>
+          <th>Description</th>
+        </tr>
+        <tr>
+          <td>NYPD Historical Crime Reports (Robbery)</td>
+          <td>60</td>
+          <td>Incident counts by precinct and time for robbery cases</td>
+        </tr>
+        <tr>
+          <td>Weather Data</td>
+          <td>25</td>
+          <td>Correlation with crime spikes during specific weather conditions</td>
+        </tr>
+      </table>
+      <p>Secondary Sources (15% weight):</p>
+      <ul>
+        <li>Economic indicator correlations [5]</li>
+        <li>Public event schedules [6]</li>
+      </ul>
+      <p><strong>Robbery Data Filtering:</strong> The AI prioritizes robbery incidents with high geospatial clustering (using DBSCAN) and temporal consistency (e.g., 6PM-12AM spikes). The 85% weight is assigned due to the high volume and reliability of NYPD robbery data, validated against historical patterns.</p>
+      <p>For detailed data, see the <a href="index.html#data-sources">Data Sources</a> section on the Home page.</p>
+    </div>
+  </div>
+  <div class="analysis-popup" id="analysis-popup">
+    <button class="close-button" onclick="hideAnalysisPopup()">×</button>
+    <div class="popup-content">
+      <h3>Detailed AI Analysis for <span id="popup-selected-crime">Robbery</span> in <span id="popup-selected-area">Citywide</span></h3>
+      <p>1. Temporal Patterns: 68% of robberies occur between 6PM-12AM, with a 15% increase during holiday weekends [2].</p>
+      <p>2. Geospatial Clustering: The model detected 3 hotspot areas with similar characteristics to previous robbery clusters [3].</p>
+    </div>
+  </div>
+  <div class="metrics-popup" id="metrics-popup">
+    <button class="close-button" onclick="hideMetricsPopup()">×</button>
+    <div class="popup-content">
+      <h3>How Effectiveness Metrics Are Calculated</h3>
+      <p>Metrics are derived from a confusion matrix based on 2022 test data for robbery hotspot predictions:</p>
+      <table>
+        <tr><th></th><th>Predicted Hotspot</th><th>Predicted Non-Hotspot</th></tr>
+        <tr><td>Actual Hotspot</td><td>TP = 890</td><td>FN = 170</td></tr>
+        <tr><td>Actual Non-Hotspot</td><td>FP = 110</td><td>TN = 830</td></tr>
+      </table>
+      <p><strong>Precision (89%):</strong> TP / (TP + FP) = 890 / (890 + 110) = 0.89. Measures the proportion of correctly identified hotspots among all predicted hotspots.</p>
+      <p><strong>Recall (84%):</strong> TP / (TP + FN) = 890 / (890 + 170) = 0.84. Measures the proportion of actual hotspots correctly identified.</p>
+      <p><strong>False Positive Rate (11%):</strong> FP / (FP + TN) = 110 / (110 + 830) = 0.11. Measures the proportion of non-hotspots incorrectly predicted as hotspots.</p>
+    </div>
+  </div>
+
+  <script>
+    // Sample data for graphs and alerts
+    const crimeData = {
+      'Robbery': {
+        'Citywide': {
+          data_7days: [10, 12, 8, 15, 11, 13, 9],
+          data_month: [40, 45, 42, 43],
+          data_year: [200, 210, 205, 208, 215, 212, 209, 211, 213, 207, 206, 204],
+          data_5years: [70, 68, 65, 64, 63],
+          confidence: 68,
+          reason: 'The model identified a 23% increase in robbery incidents based on historical patterns from the past 5 years [1].'
+        },
+        'Bronx': {
+          data_7days: [3, 4, 2, 5, 3, 4, 2],
+          data_month: [12, 14, 13, 15],
+          data_year: [50, 52, 51, 53, 54, 50, 49, 51, 52, 50, 48, 47],
+          data_5years: [15, 14, 13, 12, 11],
+          confidence: 70,
+          reason: 'The model detected a 20% increase in robbery incidents in Bronx based on historical data [1].'
+        },
+        'Brooklyn': {
+          data_7days: [4, 5, 3, 6, 4, 5, 3],
+          data_month: [18, 20, 19, 21],
+          data_year: [80, 82, 81, 83, 84, 80, 79, 81, 82, 80, 78, 77],
+          data_5years: [20, 19, 18, 17, 16],
+          confidence: 72,
+          reason: 'The model identified hotspot clusters in Brooklyn with 72% confidence [1].'
+        },
+        'Queens': {
+          data_7days: [2, 3, 2, 4, 3, 3, 2],
+          data_month: [10, 11, 12, 13],
+          data_year: [40, 42, 41, 43, 44, 40, 39, 41, 42, 40, 38, 37],
+          data_5years: [10, 11, 12, 13, 14],
+          confidence: 65,
+          reason: 'Preliminary data shows a slight increase in Queens robberies [1].'
+        },
+        'Manhattan': {
+          data_7days: [5, 6, 4, 7, 5, 6, 4],
+          data_month: [22, 24, 23, 25],
+          data_year: [100, 102, 101, 103, 104, 100, 99, 101, 102, 100, 98, 97],
+          data_5years: [25, 24, 23, 22, 21],
+          confidence: 75,
+          reason: 'Manhattan shows consistent robbery patterns with 75% confidence [1].'
+        },
+        'Staten Island': {
+          data_7days: [1, 2, 1, 2, 1, 2, 1],
+          data_month: [5, 6, 7, 8],
+          data_year: [20, 22, 21, 23, 24, 20, 19, 21, 22, 20, 18, 17],
+          data_5years: [5, 6, 7, 8, 9],
+          confidence: 60,
+          reason: 'Low incident count in Staten Island leads to 60% confidence [1].'
+        }
+      },
+      'Property Crime': {
+        'Citywide': {
+          data_7days: [8, 9, 7, 10, 8, 9, 7],
+          data_month: [35, 38, 36, 39],
+          data_year: [180, 185, 182, 187, 190, 183, 181, 184, 186, 182, 180, 179],
+          data_5years: [40, 42, 41, 43, 42],
+          confidence: 87,
+          reason: 'Seasonal pattern detected with 87% confidence for property crimes [1].'
+        },
+        'Bronx': {
+          data_7days: [2, 3, 2, 4, 3, 3, 2],
+          data_month: [10, 12, 11, 13],
+          data_year: [45, 47, 46, 48, 49, 45, 44, 46, 47, 45, 43, 42],
+          data_5years: [10, 12, 11, 13, 12],
+          confidence: 85,
+          reason: 'Bronx property crimes show seasonal trends with 85% confidence [1].'
+        },
+        'Brooklyn': {
+          data_7days: [3, 4, 3, 5, 4, 4, 3],
+          data_month: [15, 16, 17, 18],
+          data_year: [70, 72, 71, 73, 74, 70, 69, 71, 72, 70, 68, 67],
+          data_5years: [15, 16, 17, 18, 19],
+          confidence: 88,
+          reason: 'Brooklyn property crimes align with historical data at 88% confidence [1].'
+        },
+        'Queens': {
+          data_7days: [2, 2, 2, 3, 2, 2, 2],
+          data_month: [8, 9, 10, 11],
+          data_year: [35, 37, 36, 38, 39, 35, 34, 36, 37, 35, 33, 32],
+          data_5years: [8, 9, 10, 11, 12],
+          confidence: 80,
+          reason: 'Queens shows moderate increase in property crimes [1].'
+        },
+        'Manhattan': {
+          data_7days: [4, 5, 4, 6, 5, 5, 4],
+          data_month: [20, 21, 22, 23],
+          data_year: [90, 92, 91, 93, 94, 90, 89, 91, 92, 90, 88, 87],
+          data_5years: [20, 21, 22, 23, 24],
+          confidence: 90,
+          reason: 'Manhattan property crimes have strong historical correlation [1].'
+        },
+        'Staten Island': {
+          data_7days: [1, 1, 1, 2, 1, 1, 1],
+          data_month: [3, 4, 5, 6],
+          data_year: [15, 17, 16, 18, 19, 15, 14, 16, 17, 15, 13, 12],
+          data_5years: [2, 3, 4, 5, 6],
+          confidence: 75,
+          reason: 'Staten Island property crimes show low but consistent trends [1].'
+        }
+      },
+      'Grand Larceny': {
+        'Citywide': {
+          data_7days: [5, 6, 5, 7, 6, 6, 5],
+          data_month: [22, 24, 23, 25],
+          data_year: [120, 122, 121, 123, 125, 120, 119, 121, 122, 120, 118, 117],
+          data_5years: [25, 26, 27, 28, 29],
+          confidence: 85,
+          reason: 'Grand larceny trends are consistent citywide with 85% confidence [1].'
+        },
+        'Bronx': {
+          data_7days: [1, 2, 1, 2, 1, 2, 1],
+          data_month: [5, 6, 7, 8],
+          data_year: [25, 27, 26, 28, 29, 25, 24, 26, 27, 25, 23, 22],
+          data_5years: [5, 6, 7, 8, 9],
+          confidence: 80,
+          reason: 'Bronx grand larceny shows steady increase [1].'
+        },
+        'Brooklyn': {
+          data_7days: [2, 3, 2, 3, 2, 3, 2],
+          data_month: [10, 11, 12, 13],
+          data_year: [45, 47, 46, 48, 49, 45, 44, 46, 47, 45, 43, 42],
+          data_5years: [10, 11, 12, 13, 14],
+          confidence: 82,
+          reason: 'Brooklyn grand larceny aligns with historical patterns [1].'
+        },
+        'Queens': {
+          data_7days: [1, 1, 1, 2, 1, 1, 1],
+          data_month: [3, 4, 5, 6],
+          data_year: [15, 17, 16, 18, 19, 15, 14, 16, 17, 15, 13, 12],
+          data_5years: [3, 4, 5, 6, 7],
+          confidence: 78,
+          reason: 'Queens grand larceny shows moderate trends [1].'
+        },
+        'Manhattan': {
+          data_7days: [3, 4, 3, 4, 3, 4, 3],
+          data_month: [15, 16, 17, 18],
+          data_year: [65, 67, 66, 68, 69, 65, 64, 66, 67, 65, 63, 62],
+          data_5years: [15, 16, 17, 18, 19],
+          confidence: 88,
+          reason: 'Manhattan grand larceny has strong predictive patterns [1].'
+        },
+        'Staten Island': {
+          data_7days: [0, 1, 0, 1, 0, 1, 0],
+          data_month: [1, 2, 3, 4],
+          data_year: [5, 7, 6, 8, 9, 5, 4, 6, 7, 5, 3, 2],
+          data_5years: [1, 2, 3, 4, 5],
+          confidence: 70,
+          reason: 'Staten Island grand larceny has low incident counts [1].'
+        }
+      },
+      'Burglary': {
+        'Citywide': {
+          data_7days: [4, 5, 4, 6, 5, 5, 4],
+          data_month: [18, 20, 19, 21],
+          data_year: [100, 102, 101, 103, 105, 100, 99, 101, 102, 100, 98, 97],
+          data_5years: [20, 21, 22, 23, 24],
+          confidence: 80,
+          reason: 'Burglary trends are stable citywide with 80% confidence [1].'
+        },
+        'Bronx': {
+          data_7days: [1, 2, 1, 2, 1, 2, 1],
+          data_month: [5, 6, 7, 8],
+          data_year: [25, 27, 26, 28, 29, 25, 24, 26, 27, 25, 23, 22],
+          data_5years: [5, 6, 7, 8, 9],
+          confidence: 78,
+          reason: 'Bronx burglary shows slight increase [1].'
+        },
+        'Brooklyn': {
+          data_7days: [2, 3, 2, 3, 2, 3, 2],
+          data_month: [10, 11, 12, 13],
+          data_year: [45, 47, 46, 48, 49, 45, 44, 46, 47, 45, 43, 42],
+          data_5years: [10, 11, 12, 13, 14],
+          confidence: 82,
+          reason: 'Brooklyn burglary aligns with historical data [1].'
+        },
+        'Queens': {
+          data_7days: [1, 1, 1, 2, 1, 1, 1],
+          data_month: [3, 4, 5, 6],
+          data_year: [15, 17, 16, 18, 19, 15, 14, 16, 17, 15, 13, 12],
+          data_5years: [3, 4, 5, 6, 7],
+          confidence: 75,
+          reason: 'Queens burglary shows moderate trends [1].'
+        },
+        'Manhattan': {
+          data_7days: [3, 4, 3, 4, 3, 4, 3],
+          data_month: [15, 16, 17, 18],
+          data_year: [65, 67, 66, 68, 69, 65, 64, 66, 67, 65, 63, 62],
+          data_5years: [15, 16, 17, 18, 19],
+          confidence: 85,
+          reason: 'Manhattan burglary has strong predictive patterns [1].'
+        },
+        'Staten Island': {
+          data_7days: [0, 1, 0, 1, 0, 1, 0],
+          data_month: [1, 2, 3, 4],
+          data_year: [5, 7, 6, 8, 9, 5, 4, 6, 7, 5, 3, 2],
+          data_5years: [1, 2, 3, 4, 5],
+          confidence: 70,
+          reason: 'Staten Island burglary has low incident counts [1].'
+        }
+      },
+      'Rape': {
+        'Citywide': {
+          data_7days: [2, 3, 2, 3, 2, 3, 2],
+          data_month: [10, 11, 10, 12],
+          data_year: [50, 51, 50, 52, 53, 50, 49, 51, 52, 50, 48, 47],
+          data_5years: [450, 460, 465, 468, 470],
+          confidence: 91,
+          reason: '91% confidence in upward trend based on consistent reporting patterns and verified cases [1].'
+        },
+        'Bronx': {
+          data_7days: [1, 1, 1, 2, 1, 1, 1],
+          data_month: [3, 4, 3, 5],
+          data_year: [12, 13, 12, 14, 15, 12, 11, 13, 14, 12, 10, 9],
+          data_5years: [8, 9, 10, 11, 12],
+          confidence: 89,
+          reason: 'Bronx rape incidents show upward trend with 89% confidence [1].'
+        },
+        'Brooklyn': {
+          data_7days: [1, 2, 1, 2, 1, 2, 1],
+          data_month: [5, 6, 5, 7],
+          data_year: [20, 21, 20, 22, 23, 20, 19, 21, 22, 20, 18, 17],
+          data_5years: [12, 13, 14, 15, 16],
+          confidence: 90,
+          reason: 'Brooklyn rape trends are consistent with 90% confidence [1].'
+        },
+        'Queens': {
+          data_7days: [0, 1, 0, 1, 0, 1, 0],
+          data_month: [2, 3, 2, 4],
+          data_year: [10, 11, 10, 12, 13, 10, 9, 11, 12, 10, 8, 7],
+          data_5years: [6, 7, 8, 9, 10],
+          confidence: 87,
+          reason: 'Queens rape incidents show moderate increase [1].'
+        },
+        'Manhattan': {
+          data_7days: [2, 2, 2, 3, 2, 2, 2],
+          data_month: [8, 9, 8, 10],
+          data_year: [30, 31, 30, 32, 33, 30, 29, 31, 32, 30, 28, 27],
+          data_5years: [18, 19, 20, 21, 22],
+          confidence: 92,
+          reason: 'Manhattan rape trends have strong correlation [1].'
+        },
+        'Staten Island': {
+          data_7days: [0, 0, 0, 1, 0, 0, 0],
+          data_month: [1, 1, 2, 2],
+          data_year: [3, 4, 3, 5, 6, 3, 2, 4, 5, 3, 2, 1],
+          data_5years: [2, 3, 4, 5, 6],
+          confidence: 85,
+          reason: 'Staten Island rape incidents show low but consistent trends [1].'
+        }
+      },
+      'Murder': {
+        'Citywide': {
+          data_7days: [1, 1, 0, 2, 1, 1, 0],
+          data_month: [5, 6, 5, 7],
+          data_year: [20, 22, 21, 23, 24, 20, 19, 21, 22, 20, 18, 17],
+          data_5years: [200, 220, 230, 240, 241],
+          confidence: 72,
+          reason: '72% confidence in downward trend due to increased police presence in high-risk areas [1].'
+        },
+        'Bronx': {
+          data_7days: [0, 1, 0, 1, 0, 1, 0],
+          data_month: [2, 2, 3, 3],
+          data_year: [5, 6, 5, 7, 8, 5, 4, 6, 7, 5, 3, 2],
+          data_5years: [2, 3, 4, 5, 6],
+          confidence: 70,
+          reason: 'Bronx murder incidents show slight increase [1].'
+        },
+        'Brooklyn': {
+          data_7days: [0, 1, 0, 1, 0, 1, 0],
+          data_month: [3, 3, 4, 4],
+          data_year: [8, 9, 8, 10, 11, 8, 7, 9, 10, 8, 6, 5],
+          data_5years: [6, 7, 8, 9, 10],
+          confidence: 73,
+          reason: 'Brooklyn murder trends align with police presence [1].'
+        },
+        'Queens': {
+          data_7days: [0, 0, 0, 1, 0, 0, 0],
+          data_month: [1, 1, 2, 2],
+          data_year: [3, 4, 3, 5, 6, 3, 2, 4, 5, 3, 2, 1],
+          data_5years: [1, 2, 3, 4, 5],
+          confidence: 68,
+          reason: 'Queens murder incidents are low with 68% confidence [1].'
+        },
+        'Manhattan': {
+          data_7days: [1, 1, 1, 2, 1, 1, 1],
+          data_month: [4, 4, 5, 5],
+          data_year: [12, 13, 12, 14, 15, 12, 11, 13, 14, 12, 10, 9],
+          data_5years: [10, 11, 12, 13, 14],
+          confidence: 75,
+          reason: 'Manhattan murder trends show moderate predictability [1].'
+        },
+        'Staten Island': {
+          data_7days: [0, 0, 0, 0, 0, 0, 0],
+          data_month: [0, 1, 1, 1],
+          data_year: [1, 2, 1, 3, 4, 1, 0, 2, 3, 1, 0, 0],
+          data_5years: [0, 1, 2, 3, 4],
+          confidence: 65,
+          reason: 'Staten Island murder incidents are minimal [1].'
+        }
+      }
+    };
+
+    const crimeAlerts = {
+      'Robbery': {
+        'Citywide': [
+          { date: '05/28/2025', time: '8:00 PM', precinct: '7B', desc: 'Robbery reported at 123 Main St.' },
+          { date: '05/27/2025', time: '9:15 PM', precinct: '5A', desc: 'Attempted robbery at 456 Elm St.' }
+        ],
+        'Bronx': [
+          { date: '05/28/2025', time: '7:30 PM', precinct: '12C', desc: 'Robbery at 789 Oak St.' }
+        ],
+        'Brooklyn': [
+          { date: '05/28/2025', time: '6:45 PM', precinct: '9D', desc: 'Robbery at 101 Pine St.' }
+        ],
+        'Queens': [
+          { date: '05/27/2025', time: '10:00 PM', precinct: '14E', desc: 'Robbery at 202 Maple St.' }
+        ],
+        'Manhattan': [
+          { date: '05/28/2025', time: '5:30 PM', precinct: '1A', desc: 'Robbery at 303 Cedar St.' }
+        ],
+        'Staten Island': [
+          { date: '05/27/2025', time: '11:00 PM', precinct: '20F', desc: 'Robbery at 404 Birch St.' }
+        ]
+      },
+      'Property Crime': {
+        'Citywide': [
+          { date: '05/28/2025', time: '6:00 PM', precinct: '3D', desc: 'Theft reported at 321 Pine St.' }
+        ],
+        'Bronx': [
+          { date: '05/28/2025', time: '4:00 PM', precinct: '12C', desc: 'Theft at 505 Oak St.' }
+        ],
+        'Brooklyn': [
+          { date: '05/28/2025', time: '3:30 PM', precinct: '9D', desc: 'Theft at 606 Elm St.' }
+        ],
+        'Queens': [
+          { date: '05/27/2025', time: '5:00 PM', precinct: '14E', desc: 'Theft at 707 Maple St.' }
+        ],
+        'Manhattan': [
+          { date: '05/28/2025', time: '2:00 PM', precinct: '1A', desc: 'Theft at 808 Cedar St.' }
+        ],
+        'Staten Island': [
+          { date: '05/27/2025', time: '6:00 PM', precinct: '20F', desc: 'Theft at 909 Birch St.' }
+        ]
+      },
+      'Grand Larceny': {
+        'Citywide': [
+          { date: '05/28/2025', time: '7:00 PM', precinct: '4B', desc: 'Grand larceny at 111 Spruce St.' }
+        ],
+        'Bronx': [
+          { date: '05/28/2025', time: '8:00 PM', precinct: '12C', desc: 'Grand larceny at 222 Oak St.' }
+        ],
+        'Brooklyn': [
+          { date: '05/28/2025', time: '9:00 PM', precinct: '9D', desc: 'Grand larceny at 333 Elm St.' }
+        ],
+        'Queens': [
+          { date: '05/27/2025', time: '7:00 PM', precinct: '14E', desc: 'Grand larceny at 444 Maple St.' }
+        ],
+        'Manhattan': [
+          { date: '05/28/2025', time: '6:00 PM', precinct: '1A', desc: 'Grand larceny at 555 Cedar St.' }
+        ],
+        'Staten Island': [
+          { date: '05/27/2025', time: '8:00 PM', precinct: '20F', desc: 'Grand larceny at 666 Birch St.' }
+        ]
+      },
+      'Burglary': {
+        'Citywide': [
+          { date: '05/28/2025', time: '10:00 PM', precinct: '6C', desc: 'Burglary at 777 Willow St.' }
+        ],
+        'Bronx': [
+          { date: '05/28/2025', time: '11:00 PM', precinct: '12C', desc: 'Burglary at 888 Oak St.' }
+        ],
+        'Brooklyn': [
+          { date: '05/28/2025', time: '12:00 AM', precinct: '9D', desc: 'Burglary at 999 Elm St.' }
+        ],
+        'Queens': [
+          { date: '05/27/2025', time: '9:00 PM', precinct: '14E', desc: 'Burglary at 1010 Maple St.' }
+        ],
+        'Manhattan': [
+          { date: '05/28/2025', time: '8:00 PM', precinct: '1A', desc: 'Burglary at 1111 Cedar St.' }
+        ],
+        'Staten Island': [
+          { date: '05/27/2025', time: '10:00 PM', precinct: '20F', desc: 'Burglary at 1212 Birch St.' }
+        ]
+      },
+      'Rape': {
+        'Citywide': [
+          { date: '05/28/2025', time: '11:00 PM', precinct: '8A', desc: 'Rape reported at 1313 Ash St.' }
+        ],
+        'Bronx': [
+          { date: '05/28/2025', time: '12:00 AM', precinct: '12C', desc: 'Rape at 1414 Oak St.' }
+        ],
+        'Brooklyn': [
+          { date: '05/28/2025', time: '1:00 AM', precinct: '9D', desc: 'Rape at 1515 Elm St.' }
+        ],
+        'Queens': [
+          { date: '05/27/2025', time: '11:00 PM', precinct: '14E', desc: 'Rape at 1616 Maple St.' }
+        ],
+        'Manhattan': [
+          { date: '05/28/2025', time: '10:00 PM', precinct: '1A', desc: 'Rape at 1717 Cedar St.' }
+        ],
+        'Staten Island': [
+          { date: '05/27/2025', time: '12:00 AM', precinct: '20F', desc: 'Rape at 1818 Birch St.' }
+        ]
+      },
+      'Murder': {
+        'Citywide': [
+          { date: '05/28/2025', time: '1:00 AM', precinct: '2B', desc: 'Murder reported at 1919 Sycamore St.' }
+        ],
+        'Bronx': [
+          { date: '05/28/2025', time: '2:00 AM', precinct: '12C', desc: 'Murder at 2020 Oak St.' }
+        ],
+        'Brooklyn': [
+          { date: '05/28/2025', time: '3:00 AM', precinct: '9D', desc: 'Murder at 2121 Elm St.' }
+        ],
+        'Queens': [
+          { date: '05/27/2025', time: '1:00 AM', precinct: '14E', desc: 'Murder at 2222 Maple St.' }
+        ],
+        'Manhattan': [
+          { date: '05/28/2025', time: '12:00 AM', precinct: '1A', desc: 'Murder at 2323 Cedar St.' }
+        ],
+        'Staten Island': [
+          { date: '05/27/2025', time: '2:00 AM', precinct: '20F', desc: 'Murder at 2424 Birch St.' }
+        ]
+      }
+    };
+
+    // Function to draw line graph
+    function drawLineGraph(canvasId, data, color, timeFilter) {
+      const canvas = document.getElementById(canvasId);
+      const ctx = canvas.getContext('2d');
+      const width = canvas.width;
+      const height = canvas.height;
+      const padding = 40;
+
+      // Clear canvas
+      ctx.clearRect(0, 0, width, height);
+
+      // Fill background
+      ctx.fillStyle = '#2a2a2a';
+      ctx.fillRect(0, 0, width, height);
+
+      // Find max value for scaling
+      const maxValue = Math.max(...data, 1); // Ensure maxValue is at least 1
+      const stepX = data.length > 1 ? (width - padding * 2) / (data.length - 1) : (width - padding * 2);
+
+      // Draw grid lines
+      ctx.strokeStyle = 'rgba(170, 170, 170, 0.2)';
+      ctx.lineWidth = 1;
+      const ySteps = 5;
+      for (let i = 0; i <= ySteps; i++) {
+        const y = height - padding - (i / ySteps) * (height - padding * 2);
+        ctx.beginPath();
+        ctx.moveTo(padding, y);
+        ctx.lineTo(width - padding, y);
+        ctx.stroke();
+      }
+
+      // Draw line
+      ctx.beginPath();
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 2;
+      data.forEach((value, index) => {
+        const x = index * stepX + padding;
+        const y = height - padding - (value / maxValue) * (height - padding * 2);
+        if (index === 0) {
+          ctx.moveTo(x, y);
+        } else {
+          ctx.lineTo(x, y);
+        }
+      });
+      ctx.stroke();
+
+      // Draw points
+      ctx.fillStyle = color;
+      data.forEach((value, index) => {
+        const x = index * stepX + padding;
+        const y = height - padding - (value / maxValue) * (height - padding * 2);
+        ctx.beginPath();
+        ctx.arc(x, y, 3, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      // Draw axes
+      ctx.strokeStyle = '#aaa';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(padding, padding);
+      ctx.lineTo(padding, height - padding);
+      ctx.lineTo(width - padding, height - padding);
+      ctx.stroke();
+
+      // Draw X-axis labels
+      ctx.fillStyle = '#aaa';
+      ctx.font = '10px Segoe UI';
+      ctx.textAlign = 'center';
+      let labels = [];
+      if (timeFilter === 'Past 7 Days') {
+        labels = ['D1', 'D2', 'D3', 'D4', 'D5', 'D6', 'D7'];
+      } else if (timeFilter === 'Past Month') {
+        labels = ['W1', 'W2', 'W3', 'W4'];
+      } else if (timeFilter === 'Past Year') {
+        labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      } else if (timeFilter === 'Past 5 Years') {
+        labels = ['2021', '2022', '2023', '2024', '2025'];
+      } else {
+        labels = data.map((_, i) => `T${i+1}`);
+      }
+      data.forEach((_, index) => {
+        const x = index * stepX + padding;
+        ctx.fillText(labels[index] || '', x, height - padding + 15);
+      });
+
+      // Draw Y-axis labels
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'middle';
+      for (let i = 0; i <= ySteps; i++) {
+        const y = height - padding - (i / ySteps) * (height - padding * 2);
+        const value = Math.round((i / ySteps) * maxValue);
+        ctx.fillText(value, padding - 10, y);
+      }
+    }
+
+    // Function to draw bar graph
+    function drawBarGraph(canvasId, data, color, timeFilter) {
+      const canvas = document.getElementById(canvasId);
+      const ctx = canvas.getContext('2d');
+      const width = canvas.width;
+      const height = canvas.height;
+      const padding = 40;
+
+      // Clear canvas
+      ctx.clearRect(0, 0, width, height);
+
+      // Fill background
+      ctx.fillStyle = '#2a2a2a';
+      ctx.fillRect(0, 0, width, height);
+
+      // Find max value for scaling
+      const maxValue = Math.max(...data, 1); // Ensure maxValue is at least 1
+      const barWidth = (width - padding * 2) / data.length;
+      const barPadding = 10;
+
+      // Draw grid lines
+      ctx.strokeStyle = 'rgba(170, 170, 170, 0.2)';
+      ctx.lineWidth = 1;
+      const ySteps = 5;
+      for (let i = 0; i <= ySteps; i++) {
+        const y = height - padding - (i / ySteps) * (height - padding * 2);
+        ctx.beginPath();
+        ctx.moveTo(padding, y);
+        ctx.lineTo(width - padding, y);
+        ctx.stroke();
+      }
+
+      // Draw bars
+      ctx.fillStyle = color;
+      data.forEach((value, index) => {
+        const barHeight = (value / maxValue) * (height - padding * 2);
+        ctx.fillRect(
+          index * barWidth + padding + barPadding / 2,
+          height - padding - barHeight,
+          barWidth - barPadding,
+          barHeight
+        );
+      });
+
+      // Draw axes
+      ctx.strokeStyle = '#aaa';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(padding, padding);
+      ctx.lineTo(padding, height - padding);
+      ctx.lineTo(width - padding, height - padding);
+      ctx.stroke();
+
+      // Draw X-axis labels
+      ctx.fillStyle = '#aaa';
+      ctx.font = '10px Segoe UI';
+      ctx.textAlign = 'center';
+      let labels = [];
+      if (timeFilter === 'Past 7 Days') {
+        labels = ['D1', 'D2', 'D3', 'D4', 'D5', 'D6', 'D7'];
+      } else if (timeFilter === 'Past Month') {
+        labels = ['W1', 'W2', 'W3', 'W4'];
+      } else if (timeFilter === 'Past Year') {
+        labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      } else if (timeFilter === 'Past 5 Years') {
+        labels = ['2021', '2022', '2023', '2024', '2025'];
+      } else {
+        labels = data.map((_, i) => `T${i+1}`);
+      }
+      data.forEach((_, index) => {
+        const x = index * barWidth + padding + barWidth / 2;
+        ctx.fillText(labels[index] || '', x, height - padding + 15);
+      });
+
+      // Draw Y-axis labels
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'middle';
+      for (let i = 0; i <= ySteps; i++) {
+        const y = height - padding - (i / ySteps) * (height - padding * 2);
+        const value = Math.round((i / ySteps) * maxValue);
+        ctx.fillText(value, padding - 10, y);
+      }
+    }
+
+    // Pop-up control functions
+    function showHeatmapPopup() {
+      document.getElementById('heatmap-popup').style.display = 'block';
+      document.getElementById('popup-overlay').style.display = 'block';
+    }
+    function hideHeatmapPopup() {
+      document.getElementById('heatmap-popup').style.display = 'none';
+      document.getElementById('popup-overlay').style.display = 'none';
+    }
+    function showAnalysisPopup() {
+      document.getElementById('analysis-popup').style.display = 'block';
+      document.getElementById('popup-overlay').style.display = 'block';
+    }
+    function hideAnalysisPopup() {
+      document.getElementById('analysis-popup').style.display = 'none';
+      document.getElementById('popup-overlay').style.display = 'none';
+    }
+    function showMetricsPopup() {
+      document.getElementById('metrics-popup').style.display = 'block';
+      document.getElementById('popup-overlay').style.display = 'block';
+    }
+    function hideMetricsPopup() {
+      document.getElementById('metrics-popup').style.display = 'none';
+      document.getElementById('popup-overlay').style.display = 'none';
+    }
+
+    // Update content based on filter selections
+    function updateContent() {
+      const crime = document.getElementById('crime-filter').value;
+      const area = document.getElementById('area-filter').value;
+      const timeFilter = document.getElementById('time-filter').value;
+      const graphType = document.getElementById('graph-type').value;
+      const data = crimeData[crime]?.[area] || {};
+
+      // Select data based on time filter
+      let graphData;
+      let xLabel;
+      if (timeFilter === 'Past 7 Days') {
+        graphData = data.data_7days || [0, 0, 0, 0, 0, 0, 0];
+        xLabel = 'Days';
+      } else if (timeFilter === 'Past Month') {
+        graphData = data.data_month || [0, 0, 0, 0];
+        xLabel = 'Weeks';
+      } else if (timeFilter === 'Past Year') {
+        graphData = data.data_year || [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+        xLabel = 'Months';
+      } else if (timeFilter === 'Past 5 Years') {
+        graphData = data.data_5years || [0, 0, 0, 0, 0];
+        xLabel = 'Years';
+      } else {
+        // Custom date range (simplified)
+        graphData = (data.data_5years || [0, 0, 0, 0, 0]).slice(0, 3);
+        xLabel = 'Custom Period';
+      }
+
+      // Debug logging
+      console.log(`Crime: ${crime}, Area: ${area}, Time Filter: ${timeFilter}, Graph Data:`, graphData);
+
+      // Update confidence and summary
+      const confidenceElement = document.getElementById('confidence-score');
+      confidenceElement.textContent = `Confidence: ${data.confidence || 0}%`;
+      confidenceElement.style.color = (data.confidence || 0) >= 80 ? '#51cf66' : (data.confidence || 0) >= 60 ? '#fcc419' : '#ff6b6b';
+      document.getElementById('reasoning-summary').textContent = data.reason || 'No analysis available.';
+
+      // Update pop-up content
+      document.getElementById('popup-selected-crime').textContent = crime;
+      document.getElementById('popup-selected-area').textContent = area;
+
+      // Update graph label
+      document.getElementById('graph-label-x').textContent = xLabel;
+
+
+      // Draw graph
+      if (graphType === 'Bar Graph') {
+        drawBarGraph('crime-trend-graph', graphData, '#3498db', timeFilter);
+      } else {
+        drawLineGraph('crime-trend-graph', graphData, '#3498db', timeFilter);
+      }
+    }
+
+    // Initialize and add event listeners
+    window.addEventListener('load', () => {
+      updateContent();
+      const timeFilter = document.getElementById('time-filter');
+      const customDateRange = document.getElementById('custom-date-range');
+      timeFilter.addEventListener('change', () => {
+        customDateRange.style.display = timeFilter.value === 'Custom' ? 'flex' : 'none';
+        updateContent();
+      });
+      document.getElementById('crime-filter').addEventListener('change', updateContent);
+      document.getElementById('area-filter').addEventListener('change', updateContent);
+      document.getElementById('graph-type').addEventListener('change', updateContent);
+      document.getElementById('start-date').addEventListener('change', updateContent);
+      document.getElementById('end-date').addEventListener('change', updateContent);
+    });
+  </script>
+</body>
+</html>
