@@ -601,7 +601,7 @@
           <td>2025-05-24</td>
           <td>Precinct 12</td>
           <td>15</td>
-          <td><a href="/Scripts/crime-reports.html">NYPD Crime Reports [1]</a></td>
+          <td><a href="Scripts/crime-reports.html">NYPD Crime Reports [1]</a></td>
           <td>0.85</td>
         </tr>
         <tr>
@@ -609,7 +609,7 @@
           <td>2025-05-24</td>
           <td>Precinct 10</td>
           <td>42</td>
-          <td><a href="/Scripts/crime-reports.html">NYPD Crime Reports [1]</a></td>
+          <td><a href="Scripts/crime-reports.html">NYPD Crime Reports [1]</a></td>
           <td>0.85</td>
         </tr>
         <tr>
@@ -617,7 +617,7 @@
           <td>2025-05-24</td>
           <td>Precinct 12</td>
           <td>2</td>
-          <td><a href="/Scripts/crime-reports.html">NYPD Crime Reports [1]</a></td>
+          <td><a href="Scripts/crime-reports.html">NYPD Crime Reports [1]</a></td>
           <td>0.85</td>
         </tr>
         <tr>
@@ -625,7 +625,7 @@
           <td>2025-05-24</td>
           <td>Precinct 10</td>
           <td>8</td>
-          <td><a href="/Scripts/crime-reports.html">NYPD Crime Reports [1]</a></td>
+          <td><a href="Scripts/crime-reports.html">NYPD Crime Reports [1]</a></td>
           <td>0.85</td>
         </tr>
         <tr>
@@ -633,7 +633,7 @@
           <td>2025-05-24</td>
           <td>Precinct 12</td>
           <td>25</td>
-          <td><a href="/Scripts/crime-reports.html">NYPD Crime Reports [1]</a></td>
+          <td><a href="Scripts/crime-reports.html">NYPD Crime Reports [1]</a></td>
           <td>0.85</td>
         </tr>
         <tr>
@@ -655,7 +655,7 @@
       </table>
       <p><strong>References:</strong></p>
       <ul>
-        <li><a href="/Scripts/crime-reports.html">[1] NYPD Historical Crime Reports (2018-2023)</a></li>
+        <li><a href="Scripts/crime-reports.html">[1] NYPD Historical Crime Reports (2018-2023)</a></li>
         <li>[4] Weather Data Correlation Analysis</li>
         <li>[5] Economic Indicator Correlations</li>
       </ul>
@@ -689,7 +689,7 @@
         <h2>How AI Marks Hotspots on the Map</h2>
         <p>The AI identifies and marks crime hotspots on the map using the following process:</p>
         <ol>
-          <li><strong>Data Source</strong>: The AI uses crime data from the <a href="/Scripts/crime-reports.html">Data Sources table</a>, specifically NYPD Crime Reports [1] for crimes like Murder, Felony Assault, Rape, and Robbery.</li>
+          <li><strong>Data Source</strong>: The AI uses crime data from the <a href="Scripts/crime-reports.html">Data Sources table</a>, specifically NYPD Crime Reports [1] for crimes like Murder, Felony Assault, Rape, and Robbery.</li>
           <li><strong>Filtering</strong>: The AI filters the data based on user selections in the dashboard filters (e.g., Borough: Bronx, Crime Type: Property Crimes, Time Period: Last 7 Days). For example, to mark Murder hotspots, the AI queries the dataset for incidents where "Crime Type = Murder" and "Date" is within the selected time frame.</li>
           <li><strong>Geospatial Analysis</strong>: The AI aggregates crime counts by precinct and maps them to geographic coordinates. For instance, a hotspot at 30% top, 40% left corresponds to a high concentration of crimes in Precinct 12, calculated using a clustering algorithm (e.g., DBSCAN) with a crime density threshold of 10 incidents per square kilometer.</li>
           <li><strong>Visualization</strong>: Hotspots are marked with red star icons on the map. The position is calculated by mapping precinct centroids to the map's pixel coordinates, scaled to the map's dimensions (e.g., 30% top, 40% left for a precinct centroid).</li>
@@ -729,7 +729,7 @@
       'property-crimes': {
         title: 'Felony Assault',
         count: '12',
-        countExplanation: 'The count of 12 represents the normalized number of Felony Assault incidents in Precinct 10 on 2025-05-24, adjusted to crimes per 100,000 residents. The raw count (42 incidents, see <a href="/Scripts/crime-reports.html">Data Sources table</a>) is divided by the precinct population (350,000) and multiplied by 100,000: (42 / 350,000) * 100,000 ≈ 12.',
+        countExplanation: 'The count of 12 represents the normalized number of Felony Assault incidents in Precinct 10 on 2025-05-24, adjusted to crimes per 100,000 residents. The raw count (42 incidents, see <a href="Scripts/crime-reports.html">Data Sources table</a>) is divided by the precinct population (350,000) and multiplied by 100,000: (42 / 350,000) * 100,000 ≈ 12.',
         confidence: '87%',
         confidenceExplanation: 'The 87% confidence score is calculated using a weighted average of historical trend reliability and data recency: Confidence = (0.7 * HistoricalConsistency + 0.3 * DataRecency). HistoricalConsistency (90%) is based on 3 years of seasonal patterns; DataRecency (80%) accounts for the data being from 2025-05-24.',
         change: '3% decrease',
@@ -739,7 +739,7 @@
       'grand-larceny': {
         title: 'Murder',
         count: '241',
-        countExplanation: 'The count of 241 represents the normalized number of Murder incidents in Precinct 12 on 2025-05-24, adjusted to crimes per 100,000 residents. The raw count (2 incidents, see <a href="/Scripts/crime-reports.html">Data Sources table</a>) is divided by the precinct population (830) and multiplied by 100,000: (2 / 830) * 100,000 ≈ 241.',
+        countExplanation: 'The count of 241 represents the normalized number of Murder incidents in Precinct 12 on 2025-05-24, adjusted to crimes per 100,000 residents. The raw count (2 incidents, see <a href="Scripts/crime-reports.html">Data Sources table</a>) is divided by the precinct population (830) and multiplied by 100,000: (2 / 830) * 100,000 ≈ 241.',
         confidence: '72%',
         confidenceExplanation: 'The 72% confidence score is derived from a formula combining police presence impact and data reliability: Confidence = (0.6 * PoliceImpact + 0.4 * DataReliability). PoliceImpact (75%) reflects increased patrols; DataReliability (68%) accounts for partial precinct reporting.',
         change: '3% decrease',
@@ -749,7 +749,7 @@
       'rape': {
         title: 'Rape',
         count: '470',
-        countExplanation: 'The count of 470 represents the normalized number of Rape incidents in Precinct 10 on 2025-05-24, adjusted to crimes per 100,000 residents. The raw count (8 incidents, see <a href="/Scripts/crime-reports.html">Data Sources table</a>) is divided by the precinct population (1,700) and multiplied by 100,000: (8 / 1,700) * 100,000 ≈ 470.',
+        countExplanation: 'The count of 470 represents the normalized number of Rape incidents in Precinct 10 on 2025-05-24, adjusted to crimes per 100,000 residents. The raw count (8 incidents, see <a href="Scripts/crime-reports.html">Data Sources table</a>) is divided by the precinct population (1,700) and multiplied by 100,000: (8 / 1,700) * 100,000 ≈ 470.',
         confidence: '91%',
         confidenceExplanation: 'The 91% confidence score is calculated using a formula: Confidence = (0.8 * ReportingConsistency + 0.2 * CaseVerification). ReportingConsistency (93%) is based on stable reporting patterns over 3 years; CaseVerification (85%) reflects verified cases from NYPD reports.',
         change: '3% increase',
@@ -759,7 +759,7 @@
       'robbery': {
         title: 'Robbery',
         count: '63',
-        countExplanation: 'The count of 63 represents the normalized number of Robbery incidents in Precinct 12 on 2025-05-24, adjusted to crimes per 100,000 residents. The raw count (15 incidents, see <a href="/Scripts/crime-reports.html">Data Sources table</a>) is divided by the precinct population (23,800) and multiplied by 100,000: (15 / 23,800) * 100,000 ≈ 63.',
+        countExplanation: 'The count of 63 represents the normalized number of Robbery incidents in Precinct 12 on 2025-05-24, adjusted to crimes per 100,000 residents. The raw count (15 incidents, see <a href="Scripts/crime-reports.html">Data Sources table</a>) is divided by the precinct population (23,800) and multiplied by 100,000: (15 / 23,800) * 100,000 ≈ 63.',
         confidence: '68%',
         confidenceExplanation: 'The 68% confidence score is calculated using a formula: Confidence = (0.5 * IncidentTrend + 0.5 * DataCompleteness). IncidentTrend (70%) is based on preliminary data from 3 precincts; DataCompleteness (66%) reflects incomplete reports for the period.',
         change: '3% decrease',
