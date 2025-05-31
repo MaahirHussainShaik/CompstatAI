@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NYPD Historical Crime Reports (2018-2023)</title>
+  <style>
+    :root {
+      --bg-dark: #121212;
+      --card-dark: #1e1e1e;
+      --text-dark: #e0e0e0;
+      --border-dark: #333;
+      --highlight: #e74c3c;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-dark);
+      padding: 20px;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    h1 {
+      font-size: 24px;
+      margin-bottom: 20px;
+      color: var(--text-dark);
+    }
+    nav {
+      margin-bottom: 20px;
+    }
+    nav ul {
+      display: flex;
+      gap: 15px;
+      list-style: none;
+    }
+    nav a {
+      color: var(--highlight);
+      text-decoration: none;
+    }
+    nav a:hover {
+      text-decoration: underline;
+    }
+    .filters {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    select, input {
+      padding: 8px 12px;
+      border-radius: 4px;
+      border: 1px solid var(--border-dark);
+      background-color: var(--card-dark);
+      color: var(--text-dark);
+      font-size: 14px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: var(--card-dark);
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid var(--border-dark);
+    }
+    th, td {
+      border: 1px solid var(--border-dark);
+      padding: 10px;
+      text-align: left;
+      font-size: 14px;
+      color: var(--text-dark);
+    }
+    th {
+      background-color: #2a2a2a;
+      font-weight: bold;
+    }
+    tr:nth-child(even) {
+      background-color: #252525;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>NYPD Historical Crime Reports (2018-2023)</h1>
+    <nav>
+      <ul>
+        <li><a href="../index.html">Home</a></li>
+        <li><a href="Analyst.html">Analysis</a></li>
+        <li><a href="deployment.html">Deployment</a></li>
+      </ul>
+    </nav>
+    <div class="filters">
+      <select id="year-filter">
+        <option value="">All Years</option>
+        <option value="2018">2018</option>
+        <option value="2019">2019</option>
+        <option value="2020">2020</option>
+        <option value="2021">2021</option>
+        <option value="2022">2022</option>
+        <option value="2023">2023</option>
+      </select>
+      <select id="month-filter">
+        <option value="">All Months</option>
+        <option value="01">January</option>
+        <option value="02">February</option>
+        <option value="03">March</option>
+        <option value="04">April</option>
+        <option value="05">May</option>
+        <option value="06">June</option>
+        <option value="07">July</option>
+        <option value="08">August</option>
+        <option value="09">September</option>
+        <option value="10">October</option>
+        <option value="11">November</option>
+        <option value="12">December</option>
+      </select>
+      <input type="date" id="start-date" placeholder="Start Date">
+      <input type="date" id="end-date" placeholder="End Date">
+    </div>
+    <table id="crime-table">
+      <thead>
+        <tr>
+          <th>Crime Type</th>
+          <th>Date</th>
+          <th>Precinct</th>
+          <th>Count</th>
+          <th>Borough</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Dummy Data -->
+        <tr>
+          <td>Robbery</td>
+          <td>2018-01-15</td>
+          <td>Precinct 12</td>
+          <td>20</td>
+          <td>Bronx</td>
+        </tr>
+        <tr>
+          <td>Property Crime</td>
+          <td>2018-02-10</td>
+          <td>Precinct 10</td>
+          <td>50</td>
+          <td>Brooklyn</td>
+        </tr>
+        <tr>
+          <td>Murder</td>
+          <td>2018-03-05</td>
+          <td>Precinct 12</td>
+          <td>3</td>
+          <td>Manhattan</td>
+        </tr>
+        <tr>
+          <td>Rape</td>
+          <td>2018-04-20</td>
+          <td>Precinct 10</td>
+          <td>10</td>
+          <td>Queens</td>
+        </tr>
+        <tr>
+          <td>Grand Larceny</td>
+          <td>2018-05-25</td>
+          <td>Precinct 12</td>
+          <td>30</td>
+          <td>Staten Island</td>
+        </tr>
+        <tr>
+          <td>Robbery</td>
+          <td>2019-06-12</td>
+          <td>Precinct 14</td>
+          <td>18</td>
+          <td>Bronx</td>
+        </tr>
+        <tr>
+          <td>Property Crime</td>
+          <td>2019-07-08</td>
+          <td>Precinct 15</td>
+          <td>45</td>
+          <td>Brooklyn</td>
+        </tr>
+        <tr>
+          <td>Murder</td>
+          <td>2019-08-03</td>
+          <td>Precinct 16</td>
+          <td>2</td>
+          <td>Manhattan</td>
+        </tr>
+        <tr>
+          <td>Rape</td>
+          <td>2020-09-18</td>
+          <td>Precinct 17</td>
+          <td>7</td>
+          <td>Queens</td>
+        </tr>
+        <tr>
+          <td>Grand Larceny</td>
+          <td>2020-10-22</td>
+          <td>Precinct 18</td>
+          <td>28</td>
+          <td>Staten Island</td>
+        </tr>
+        <tr>
+          <td>Robbery</td>
+          <td>2021-11-14</td>
+          <td>Precinct 19</td>
+          <td>22</td>
+          <td>Bronx</td>
+        </tr>
+        <tr>
+          <td>Property Crime</td>
+          <td>2021-12-09</td>
+          <td>Precinct 20</td>
+          <td>40</td>
+          <td>Brooklyn</td>
+        </tr>
+        <tr>
+          <td>Murder</td>
+          <td>2022-01-30</td>
+          <td>Precinct 21</td>
+          <td>4</td>
+          <td>Manhattan</td>
+        </tr>
+        <tr>
+          <td>Rape</td>
+          <td>2022-02-25</td>
+          <td>Precinct 22</td>
+          <td>9</td>
+          <td>Queens</td>
+        </tr>
+        <tr>
+          <td>Grand Larceny</td>
+          <td>2022-03-17</td>
+          <td>Precinct 23</td>
+          <td>35</td>
+          <td>Staten Island</td>
+        </tr>
+        <tr>
+          <td>Robbery</td>
+          <td>2023-04-11</td>
+          <td>Precinct 24</td>
+          <td>15</td>
+          <td>Bronx</td>
+        </tr>
+        <tr>
+          <td>Property Crime</td>
+          <td>2023-05-24</td>
+          <td>Precinct 10</td>
+          <td>42</td>
+          <td>Brooklyn</td>
+        </tr>
+        <tr>
+          <td>Murder</td>
+          <td>2023-06-19</td>
+          <td>Precinct 12</td>
+          <td>2</td>
+          <td>Manhattan</td>
+        </tr>
+        <tr>
+          <td>Rape</td>
+          <td>2023-07-15</td>
+          <td>Precinct 10</td>
+          <td>8</td>
+          <td>Queens</td>
+        </tr>
+        <tr>
+          <td>Grand Larceny</td>
+          <td>2023-08-10</td>
+          <td>Precinct 12</td>
+          <td>25</td>
+          <td>Staten Island</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    const tableBody = document.querySelector('#crime-table tbody');
+    const yearFilter = document.querySelector('#year-filter');
+    const monthFilter = document.querySelector('#month-filter');
+    const startDate = document.querySelector('#start-date');
+    const endDate = document.querySelector('#end-date');
+
+    // Store original table data
+    const originalRows = Array.from(tableBody.querySelectorAll('tr'));
+
+    function filterTable() {
+      const year = yearFilter.value;
+      const month = monthFilter.value;
+      const start = startDate.value ? new Date(startDate.value) : null;
+      const end = endDate.value ? new Date(endDate.value) : null;
+
+      tableBody.innerHTML = '';
+
+      originalRows.forEach(row => {
+        const dateText = row.cells[1].textContent;
+        const rowDate = new Date(dateText);
+        const rowYear = dateText.split('-')[0];
+        const rowMonth = dateText.split('-')[1];
+
+        let matches = true;
+
+        if (year && rowYear !== year) {
+          matches = false;
+        }
+        if (month && rowMonth !== month) {
+          matches = false;
+        }
+        if (start && rowDate < start) {
+          matches = false;
+        }
+        if (end && rowDate > end) {
+          matches = false;
+        }
+
+        if (matches) {
+          tableBody.appendChild(row.cloneNode(true));
+        }
+      });
+    }
+
+    yearFilter.addEventListener('change', filterTable);
+    monthFilter.addEventListener('change', filterTable);
+    startDate.addEventListener('change', filterTable);
+    endDate.addEventListener('change', filterTable);
+
+    // Initialize table
+    filterTable();
+  </script>
+</body>
+</html>

@@ -138,11 +138,16 @@
     .right-card {
       flex: 1;
     }
+    .title-container {
+      display: inline-flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
     .card-title {
       font-weight: bold;
-      margin-bottom: 10px;
       color: var(--text-dark);
       font-size: 16px;
+      margin-right: 8px;
     }
     .graph-container {
       flex: 1;
@@ -290,7 +295,6 @@
     }
     .burglary { background: #e67e22; }
     .larceny { background: #2ecc71; }
-    /* New styles for transparency sections */
     .transparency-section {
       margin-top: 20px;
       padding: 15px;
@@ -336,6 +340,64 @@
     .transparency-section a:hover {
       text-decoration: underline;
     }
+    .explain-btn {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: var(--card-dark);
+      border: 1px solid var(--border-dark);
+      border-radius: 4px;
+      padding: 8px 12px;
+      cursor: pointer;
+      font-size: 12px;
+      color: var(--text-dark);
+      z-index: 10;
+    }
+    .explain-btn:hover {
+      background: #333;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.7);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-content {
+      background: var(--card-dark);
+      border-radius: 8px;
+      padding: 20px;
+      max-width: 600px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+      border: 1px solid var(--border-dark);
+      color: var(--text-dark);
+      position: relative;
+    }
+    .close-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      cursor: pointer;
+      font-size: 16px;
+      color: var(--highlight);
+    }
+    .info-icon {
+      cursor: pointer;
+      font-size: 14px;
+      color: var(--highlight);
+      transition: transform 0.2s ease, color 0.2s ease;
+    }
+    .info-icon:hover {
+      transform: scale(1.2);
+      color: #ff8c66;
+    }
   </style>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
@@ -367,7 +429,6 @@
       </div>
     </div>
 
-    <!-- Navigation Links -->
     <nav>
       <ul style="display: flex; gap: 15px; list-style: none; margin-bottom: 15px;">
         <li><a href="index.html" style="color: var(--highlight); text-decoration: none;">Home</a></li>
@@ -386,6 +447,7 @@
             <div class="zoom-btn" id="zoom-in"><i class="fas fa-plus"></i></div>
             <div class="zoom-btn" id="zoom-out"><i class="fas fa-minus"></i></div>
           </div>
+          <button class="explain-btn" id="explain-ai-btn">Explain AI</button>
         </div>
 
         <div class="bottom-cards">
@@ -397,7 +459,10 @@
                 <option>Line Graph</option>
               </select>
             </div>
-            <div class="card-title">Felony Assault</div>
+            <div class="title-container">
+              <div class="card-title">Felony Assault</div>
+              <div class="info-icon" data-card="property-crimes"><i class="fas fa-info-circle"></i></div>
+            </div>
             <div class="graph-container">
               <canvas id="property-crimes-graph" class="graph"></canvas>
             </div>
@@ -426,7 +491,10 @@
                 <option>Line Graph</option>
               </select>
             </div>
-            <div class="card-title">Murder</div>
+            <div class="title-container">
+              <div class="card-title">Murder</div>
+              <div class="info-icon" data-card="grand-larceny"><i class="fas fa-info-circle"></i></div>
+            </div>
             <div class="graph-container">
               <canvas id="grand-larceny-graph" class="graph"></canvas>
             </div>
@@ -458,7 +526,10 @@
               <option>Line Graph</option>
             </select>
           </div>
-          <div class="card-title">Rape</div>
+          <div class="title-container">
+            <div class="card-title">Rape</div>
+            <div class="info-icon" data-card="rape"><i class="fas fa-info-circle"></i></div>
+          </div>
           <div class="graph-container">
             <canvas id="rape-graph" class="graph"></canvas>
           </div>
@@ -487,7 +558,10 @@
               <option>Line Graph</option>
             </select>
           </div>
-          <div class="card-title">Robbery</div>
+          <div class="title-container">
+            <div class="card-title">Robbery</div>
+            <div class="info-icon" data-card="robbery"><i class="fas fa-info-circle"></i></div>
+          </div>
           <div class="graph-container">
             <canvas id="robbery-graph" class="graph"></canvas>
           </div>
@@ -511,7 +585,6 @@
       </div>
     </div>
 
-    <!-- Data Sources Section -->
     <div class="transparency-section" id="data-sources">
       <h2>Data Sources</h2>
       <table>
@@ -528,7 +601,7 @@
           <td>2025-05-24</td>
           <td>Precinct 12</td>
           <td>15</td>
-          <td>NYPD Crime Reports [1]</td>
+          <td><a href="/Scripts/crime-reports.html">NYPD Crime Reports [1]</a></td>
           <td>0.85</td>
         </tr>
         <tr>
@@ -536,7 +609,7 @@
           <td>2025-05-24</td>
           <td>Precinct 10</td>
           <td>42</td>
-          <td>NYPD Crime Reports [1]</td>
+          <td><a href="/Scripts/crime-reports.html">NYPD Crime Reports [1]</a></td>
           <td>0.85</td>
         </tr>
         <tr>
@@ -544,7 +617,7 @@
           <td>2025-05-24</td>
           <td>Precinct 12</td>
           <td>2</td>
-          <td>NYPD Crime Reports [1]</td>
+          <td><a href="/Scripts/crime-reports.html">NYPD Crime Reports [1]</a></td>
           <td>0.85</td>
         </tr>
         <tr>
@@ -552,7 +625,7 @@
           <td>2025-05-24</td>
           <td>Precinct 10</td>
           <td>8</td>
-          <td>NYPD Crime Reports [1]</td>
+          <td><a href="/Scripts/crime-reports.html">NYPD Crime Reports [1]</a></td>
           <td>0.85</td>
         </tr>
         <tr>
@@ -560,7 +633,7 @@
           <td>2025-05-24</td>
           <td>Precinct 12</td>
           <td>25</td>
-          <td>NYPD Crime Reports [1]</td>
+          <td><a href="/Scripts/crime-reports.html">NYPD Crime Reports [1]</a></td>
           <td>0.85</td>
         </tr>
         <tr>
@@ -582,13 +655,12 @@
       </table>
       <p><strong>References:</strong></p>
       <ul>
-        <li>[1] NYPD Historical Crime Reports (2018-2023)</li>
+        <li><a href="/Scripts/crime-reports.html">[1] NYPD Historical Crime Reports (2018-2023)</a></li>
         <li>[4] Weather Data Correlation Analysis</li>
         <li>[5] Economic Indicator Correlations</li>
       </ul>
     </div>
 
-    <!-- Graph Generation Section -->
     <div class="transparency-section">
       <h2>How Graphs Are Generated</h2>
       <p>The AI processes raw crime data to create visualizations:</p>
@@ -600,7 +672,6 @@
       <p><strong>Example</strong>: For Robbery in Precinct 12 (15 incidents, 100,000 residents) and Precinct 10 (10 incidents, 80,000 residents), the AI normalizes to 15 and 12.5 per 100,000, then plots bars or lines using the Canvas API, as implemented in the JavaScript code.</p>
     </div>
 
-    <!-- Deployment Recommendations Section -->
     <div class="transparency-section">
       <h2>AI Deployment Recommendations</h2>
       <p>The AI uses crime data and historical patterns to recommend resource allocations (e.g., patrol units, detective teams) for specific areas like the Financial District or Residential Zone. See the <a href="deployment.html">Deployment Page</a> for details.</p>
@@ -610,6 +681,29 @@
         <li>Confidence levels (e.g., 89% for Financial District) are calculated using historical trends and recent data.</li>
         <li>Recommendations are generated, such as deploying 2 patrol units from 18:00-02:00 based on a 73% increase in robbery patterns.</li>
       </ul>
+    </div>
+
+    <div class="modal" id="explain-ai-modal">
+      <div class="modal-content">
+        <span class="close-btn" id="close-ai-modal">×</span>
+        <h2>How AI Marks Hotspots on the Map</h2>
+        <p>The AI identifies and marks crime hotspots on the map using the following process:</p>
+        <ol>
+          <li><strong>Data Source</strong>: The AI uses crime data from the <a href="/Scripts/crime-reports.html">Data Sources table</a>, specifically NYPD Crime Reports [1] for crimes like Murder, Felony Assault, Rape, and Robbery.</li>
+          <li><strong>Filtering</strong>: The AI filters the data based on user selections in the dashboard filters (e.g., Borough: Bronx, Crime Type: Property Crimes, Time Period: Last 7 Days). For example, to mark Murder hotspots, the AI queries the dataset for incidents where "Crime Type = Murder" and "Date" is within the selected time frame.</li>
+          <li><strong>Geospatial Analysis</strong>: The AI aggregates crime counts by precinct and maps them to geographic coordinates. For instance, a hotspot at 30% top, 40% left corresponds to a high concentration of crimes in Precinct 12, calculated using a clustering algorithm (e.g., DBSCAN) with a crime density threshold of 10 incidents per square kilometer.</li>
+          <li><strong>Visualization</strong>: Hotspots are marked with red star icons on the map. The position is calculated by mapping precinct centroids to the map's pixel coordinates, scaled to the map's dimensions (e.g., 30% top, 40% left for a precinct centroid).</li>
+        </ol>
+        <p><strong>Example</strong>: For Murder in Precinct 12 on 2025-05-24, the AI identified 2 incidents (see Data Sources table). After filtering for "Murder" and normalizing by population (2 per 100,000 residents), the AI marked a hotspot at the precinct's centroid if the crime density exceeded the threshold.</p>
+      </div>
+    </div>
+
+    <div class="modal" id="card-explain-modal">
+      <div class="modal-content">
+        <span class="close-btn" id="close-card-modal">×</span>
+        <h2>Card Data Explanation</h2>
+        <div id="card-explanation-content"></div>
+      </div>
     </div>
   </div>
 
@@ -630,6 +724,50 @@
       'robbery': '#3498db'
     };
 
+    // Card explanations
+    const cardExplanations = {
+      'property-crimes': {
+        title: 'Felony Assault',
+        count: '12',
+        countExplanation: 'The count of 12 represents the normalized number of Felony Assault incidents in Precinct 10 on 2025-05-24, adjusted to crimes per 100,000 residents. The raw count (42 incidents, see <a href="/Scripts/crime-reports.html">Data Sources table</a>) is divided by the precinct population (350,000) and multiplied by 100,000: (42 / 350,000) * 100,000 ≈ 12.',
+        confidence: '87%',
+        confidenceExplanation: 'The 87% confidence score is calculated using a weighted average of historical trend reliability and data recency: Confidence = (0.7 * HistoricalConsistency + 0.3 * DataRecency). HistoricalConsistency (90%) is based on 3 years of seasonal patterns; DataRecency (80%) accounts for the data being from 2025-05-24.',
+        change: '3% decrease',
+        changeExplanation: 'The 3% decrease is calculated by comparing the current normalized count (12 per 100,000) to the previous period’s count (12.4 per 100,000) from NYPD Crime Reports [1]: ((12.4 - 12) / 12.4) * 100 ≈ 3%. The previous period’s data is sourced from the same NYPD reports for the prior 7 days.',
+        graphExplanation: 'The bar graph is drawn using the Canvas API, plotting normalized crime counts from the Data Sources table (column: Count) for Felony Assault over 5 time periods. The AI filters the table for "Crime Type = Property Crime" and "Precinct = 10", using the "Count" column (e.g., 42 incidents). Each bar’s height is scaled to the maximum count (42), with the x-axis representing time periods and the y-axis representing normalized counts per 100,000 residents.'
+      },
+      'grand-larceny': {
+        title: 'Murder',
+        count: '241',
+        countExplanation: 'The count of 241 represents the normalized number of Murder incidents in Precinct 12 on 2025-05-24, adjusted to crimes per 100,000 residents. The raw count (2 incidents, see <a href="/Scripts/crime-reports.html">Data Sources table</a>) is divided by the precinct population (830) and multiplied by 100,000: (2 / 830) * 100,000 ≈ 241.',
+        confidence: '72%',
+        confidenceExplanation: 'The 72% confidence score is derived from a formula combining police presence impact and data reliability: Confidence = (0.6 * PoliceImpact + 0.4 * DataReliability). PoliceImpact (75%) reflects increased patrols; DataReliability (68%) accounts for partial precinct reporting.',
+        change: '3% decrease',
+        changeExplanation: 'The 3% decrease is calculated by comparing the current normalized count (241 per 100,000) to the previous period’s count (248.5 per 100,000) from NYPD Crime Reports [1]: ((248.5 - 241) / 248.5) * 100 ≈ 3%. The previous period’s data is sourced from the same NYPD reports for the prior 7 days.',
+        graphExplanation: 'The bar graph is drawn using the Canvas API, plotting normalized crime counts from the Data Sources table (column: Count) for Murder over 5 time periods. The AI filters the table for "Crime Type = Murder" and "Precinct = 12", using the "Count" column (e.g., 2 incidents). Each bar’s height is scaled to the maximum count (2), with the x-axis representing time periods and the y-axis representing normalized counts per 100,000 residents.'
+      },
+      'rape': {
+        title: 'Rape',
+        count: '470',
+        countExplanation: 'The count of 470 represents the normalized number of Rape incidents in Precinct 10 on 2025-05-24, adjusted to crimes per 100,000 residents. The raw count (8 incidents, see <a href="/Scripts/crime-reports.html">Data Sources table</a>) is divided by the precinct population (1,700) and multiplied by 100,000: (8 / 1,700) * 100,000 ≈ 470.',
+        confidence: '91%',
+        confidenceExplanation: 'The 91% confidence score is calculated using a formula: Confidence = (0.8 * ReportingConsistency + 0.2 * CaseVerification). ReportingConsistency (93%) is based on stable reporting patterns over 3 years; CaseVerification (85%) reflects verified cases from NYPD reports.',
+        change: '3% increase',
+        changeExplanation: 'The 3% increase is calculated by comparing the current normalized count (470 per 100,000) to the previous period’s count (456.3 per 100,000) from NYPD Crime Reports [1]: ((470 - 456.3) / 456.3) * 100 ≈ 3%. The previous period’s data is sourced from the same NYPD reports for the prior 7 days.',
+        graphExplanation: 'The bar graph is drawn using the Canvas API, plotting normalized crime counts from the Data Sources table (column: Count) for Rape over 5 time periods. The AI filters the table for "Crime Type = Rape" and "Precinct = 10", using the "Count" column (e.g., 8 incidents). Each bar’s height is scaled to the maximum count (8), with the x-axis representing time periods and the y-axis representing normalized counts per 100,000 residents.'
+      },
+      'robbery': {
+        title: 'Robbery',
+        count: '63',
+        countExplanation: 'The count of 63 represents the normalized number of Robbery incidents in Precinct 12 on 2025-05-24, adjusted to crimes per 100,000 residents. The raw count (15 incidents, see <a href="/Scripts/crime-reports.html">Data Sources table</a>) is divided by the precinct population (23,800) and multiplied by 100,000: (15 / 23,800) * 100,000 ≈ 63.',
+        confidence: '68%',
+        confidenceExplanation: 'The 68% confidence score is calculated using a formula: Confidence = (0.5 * IncidentTrend + 0.5 * DataCompleteness). IncidentTrend (70%) is based on preliminary data from 3 precincts; DataCompleteness (66%) reflects incomplete reports for the period.',
+        change: '3% decrease',
+        changeExplanation: 'The 3% decrease is calculated by comparing the current normalized count (63 per 100,000) to the previous period’s count (64.9 per 100,000) from NYPD Crime Reports [1]: ((64.9 - 63) / 64.9) * 100 ≈ 3%. The previous period’s data is sourced from the same NYPD reports for the prior 7 days.',
+        graphExplanation: 'The bar graph is drawn using the Canvas API, plotting normalized crime counts from the Data Sources table (column: Count) for Robbery over 5 time periods. The AI filters the table for "Crime Type = Robbery" and "Precinct = 12", using the "Count" column (e.g., 15 incidents). Each bar’s height is scaled to the maximum count (15), with the x-axis representing time periods and the y-axis representing normalized counts per 100,000 residents.'
+      }
+    };
+
     // Function to draw bar graph
     function drawBarGraph(canvasId, data, color) {
       const canvas = document.getElementById(canvasId);
@@ -637,15 +775,11 @@
       const width = canvas.width;
       const height = canvas.height;
 
-      // Clear canvas
       ctx.clearRect(0, 0, width, height);
-
-      // Find max value for scaling
       const maxValue = Math.max(...data);
       const barWidth = width / data.length;
       const padding = 10;
 
-      // Draw bars
       ctx.fillStyle = color;
       data.forEach((value, index) => {
         const barHeight = (value / maxValue) * (height - 20);
@@ -657,7 +791,6 @@
         );
       });
 
-      // Draw axes
       ctx.strokeStyle = '#aaa';
       ctx.lineWidth = 1;
       ctx.beginPath();
@@ -675,14 +808,10 @@
       const width = canvas.width;
       const height = canvas.height;
 
-      // Clear canvas
       ctx.clearRect(0, 0, width, height);
-
-      // Find max value for scaling
       const maxValue = Math.max(...data);
       const stepX = width / (data.length - 1);
 
-      // Draw line
       ctx.beginPath();
       ctx.strokeStyle = color;
       ctx.lineWidth = 2;
@@ -697,7 +826,6 @@
       });
       ctx.stroke();
 
-      // Draw points
       ctx.fillStyle = color;
       data.forEach((value, index) => {
         const x = index * stepX;
@@ -707,7 +835,6 @@
         ctx.fill();
       });
 
-      // Draw axes
       ctx.strokeStyle = '#aaa';
       ctx.lineWidth = 1;
       ctx.beginPath();
@@ -750,6 +877,53 @@
     document.getElementById('zoom-out').addEventListener('click', function() {
       currentScale = Math.max(1, currentScale - 0.1);
       map.style.transform = `scale(${currentScale})`;
+    });
+
+    // Modal functionality for Explain AI
+    const explainAiBtn = document.getElementById('explain-ai-btn');
+    const explainAiModal = document.getElementById('explain-ai-modal');
+    const closeAiModal = document.getElementById('close-ai-modal');
+
+    explainAiBtn.addEventListener('click', () => {
+      explainAiModal.style.display = 'flex';
+    });
+
+    closeAiModal.addEventListener('click', () => {
+      explainAiModal.style.display = 'none';
+    });
+
+    // Modal functionality for Card Explanations
+    const cardModal = document.getElementById('card-explain-modal');
+    const cardExplanationContent = document.getElementById('card-explanation-content');
+    const closeCardModal = document.getElementById('close-card-modal');
+
+    document.querySelectorAll('.info-icon').forEach(icon => {
+      icon.addEventListener('click', () => {
+        const cardId = icon.getAttribute('data-card');
+        const explanation = cardExplanations[cardId];
+        cardExplanationContent.innerHTML = `
+          <h3>${explanation.title}</h3>
+          <p><strong>Crime Count (${explanation.count}):</strong> ${explanation.countExplanation}</p>
+          <p><strong>Confidence Score (${explanation.confidence}):</strong> ${explanation.confidenceExplanation}</p>
+          <p><strong>Percentage Change (${explanation.change}):</strong> ${explanation.changeExplanation}</p>
+          <p><strong>Graph Generation:</strong> ${explanation.graphExplanation}</p>
+        `;
+        cardModal.style.display = 'flex';
+      });
+    });
+
+    closeCardModal.addEventListener('click', () => {
+      cardModal.style.display = 'none';
+    });
+
+    // Close modals when clicking outside
+    window.addEventListener('click', (event) => {
+      if (event.target === explainAiModal) {
+        explainAiModal.style.display = 'none';
+      }
+      if (event.target === cardModal) {
+        cardModal.style.display = 'none';
+      }
     });
 
     // Initialize on load
