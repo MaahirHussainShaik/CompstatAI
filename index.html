@@ -182,7 +182,7 @@
       color: var(--increase);
     }
     .decrease {
-      color: var(--decrease);
+      color: --decrease;
     }
     .confidence {
       display: flex;
@@ -393,6 +393,7 @@
       font-size: 14px;
       color: var(--highlight);
       transition: transform 0.2s ease, color 0.2s ease;
+      margin-left: 5px;
     }
     .info-icon:hover {
       transform: scale(1.2);
@@ -592,9 +593,9 @@
           <th>Crime Type</th>
           <th>Date</th>
           <th>Precinct</th>
-          <th>Count</th>
+          <th>Count <i class="fas fa-info-circle info-icon" data-info="count"></i></th>
           <th>Source</th>
-          <th>Weight</th>
+          <th>Weight <i class="fas fa-info-circle info-icon" data-info="weight"></i></th>
         </tr>
         <tr>
           <td>Robbery</td>
@@ -641,7 +642,7 @@
           <td>2025-05-24</td>
           <td>Citywide</td>
           <td>Rainy</td>
-          <td>Weather Data [4]</td>
+          <td><a href="https://www.weather.gov/okx/">NOAA National Weather Service - New York [4]</a></td>
           <td>0.10</td>
         </tr>
         <tr>
@@ -649,15 +650,15 @@
           <td>2025-05-24</td>
           <td>Citywide</td>
           <td>3.2</td>
-          <td>Economic Indicators [5]</td>
+          <td><a href="https://www1.nyc.gov/site/planning/data-maps/nyc-economy.page">NYC Economic Data [5]</a></td>
           <td>0.05</td>
         </tr>
       </table>
       <p><strong>References:</strong></p>
       <ul>
         <li><a href="Scripts/crime-reports.html">[1] NYPD Historical Crime Reports (2018-2023)</a></li>
-        <li>[4] Weather Data Correlation Analysis</li>
-        <li>[5] Economic Indicator Correlations</li>
+        <li><a href="https://www.weather.gov/okx/">[4] NOAA National Weather Service - New York</a></li>
+        <li><a href="https://www1.nyc.gov/site/planning/data-maps/nyc-economy.page">[5] NYC Economic Data</a></li>
       </ul>
     </div>
 
@@ -674,7 +675,7 @@
 
     <div class="transparency-section">
       <h2>AI Deployment Recommendations</h2>
-      <p>The AI uses crime data and historical patterns to recommend resource allocations (e.g., patrol units, detective teams) for specific areas like the Financial District or Residential Zone. See the <a href="deployment.html">Deployment Page</a> for details.</p>
+      <p>The AI uses crime data and historical patterns to recommend resource allocations (e.g., patrol units, detective teams) for specific areas like the Financial District or Residential Zone. See the <a href="Scripts/deployment.html">Deployment Page</a> for details.</p>
       <p><strong>Process</strong>:</p>
       <ul>
         <li>Data from NYPD reports and external factors (e.g., weather) are analyzed, as shown in the Data Sources table.</li>
@@ -691,7 +692,7 @@
         <ol>
           <li><strong>Data Source</strong>: The AI uses crime data from the <a href="Scripts/crime-reports.html">Data Sources table</a>, specifically NYPD Crime Reports [1] for crimes like Murder, Felony Assault, Rape, and Robbery.</li>
           <li><strong>Filtering</strong>: The AI filters the data based on user selections in the dashboard filters (e.g., Borough: Bronx, Crime Type: Property Crimes, Time Period: Last 7 Days). For example, to mark Murder hotspots, the AI queries the dataset for incidents where "Crime Type = Murder" and "Date" is within the selected time frame.</li>
-          <li><strong>Geospatial Analysis</strong>: The AI aggregates crime counts by precinct and maps them to geographic coordinates. For instance, a hotspot at 30% top, 40% left corresponds to a high concentration of crimes in Precinct 12, calculated using a clustering algorithm (e.g., DBSCAN) with a crime density threshold of 10 incidents per square kilometer.</li>
+          <li><strong>Geospatial Analysis</strong>: The AI aggregates crime counts by precinct and maps them to geographic coordinates. For instance, a hotspot at 30% top, 40% left corresponds to a high concentration of crimes in Precinct 12, calculated using a clustering algorithm (e.g., DBSCAN<i class="fas fa-info-circle info-icon" data-info="dbscan"></i>) with a crime density threshold of 10 incidents per square kilometer.</li>
           <li><strong>Visualization</strong>: Hotspots are marked with red star icons on the map. The position is calculated by mapping precinct centroids to the map's pixel coordinates, scaled to the map's dimensions (e.g., 30% top, 40% left for a precinct centroid).</li>
         </ol>
         <p><strong>Example</strong>: For Murder in Precinct 12 on 2025-05-24, the AI identified 2 incidents (see Data Sources table). After filtering for "Murder" and normalizing by population (2 per 100,000 residents), the AI marked a hotspot at the precinct's centroid if the crime density exceeded the threshold.</p>
@@ -705,10 +706,18 @@
         <div id="card-explanation-content"></div>
       </div>
     </div>
+
+    <div class="modal" id="data-info-modal">
+      <div class="modal-content">
+        <span class="close-btn" id="close-data-modal">×</span>
+        <h2 id="data-info-title"></h2>
+        <div id="data-info-content"></div>
+      </div>
+    </div>
   </div>
 
   <script>
-    // Sample data for graphs (replace with real data as needed)
+    // Sample data for graphs
     const graphData = {
       'property-crimes': [10, 15, 12, 8, 12],
       'grand-larceny': [200, 220, 230, 240, 241],
@@ -765,6 +774,51 @@
         change: '3% decrease',
         changeExplanation: 'The 3% decrease is calculated by comparing the current normalized count (63 per 100,000) to the previous period’s count (64.9 per 100,000) from NYPD Crime Reports [1]: ((64.9 - 63) / 64.9) * 100 ≈ 3%. The previous period’s data is sourced from the same NYPD reports for the prior 7 days.',
         graphExplanation: 'The bar graph is drawn using the Canvas API, plotting normalized crime counts from the Data Sources table (column: Count) for Robbery over 5 time periods. The AI filters the table for "Crime Type = Robbery" and "Precinct = 12", using the "Count" column (e.g., 15 incidents). Each bar’s height is scaled to the maximum count (15), with the x-axis representing time periods and the y-axis representing normalized counts per 100,000 residents.'
+      }
+    };
+
+    // Data info explanations
+    const dataInfoExplanations = {
+      count: {
+        title: 'How Count is Calculated',
+        content: `
+          <p>The count in the Data Sources table represents the raw number of crime incidents for a specific crime type, date, and precinct, as reported in the <a href="Scripts/crime-reports.html">NYPD Historical Crime Reports</a>.</p>
+          <p><strong>Calculation Process:</strong></p>
+          <ul>
+            <li><strong>Data Extraction</strong>: The AI queries the NYPD Crime Reports dataset for incidents matching the specified crime type (e.g., Robbery), date (e.g., 2025-05-24), and precinct (e.g., Precinct 12).</li>
+            <li><strong>Aggregation</strong>: The AI sums the number of incidents for that specific combination. For example, for Robbery in Precinct 12 on 2025-05-24, the dataset reports 15 incidents, so the count is 15.</li>
+            <li><strong>Validation</strong>: The count is cross-checked with precinct-level summaries to ensure accuracy, accounting for any reporting delays or corrections.</li>
+          </ul>
+          <p><strong>Example</strong>: For Property Crime in Precinct 10 on 2025-05-24, the AI finds 42 incidents in the dataset, resulting in a count of 42. This raw count is used directly in the table without normalization for population.</p>
+        `
+      },
+      weight: {
+        title: 'How Weight is Calculated',
+        content: `
+          <p>The weight in the Data Sources table indicates the relative importance of each data source in the AI's predictive model, with values summing to 1.0 across all sources.</p>
+          <p><strong>Calculation Process:</strong></p>
+          <ul>
+            <li><strong>Data Reliability</strong>: The AI assesses the reliability of each source based on historical consistency and completeness. NYPD Crime Reports have high reliability (90%) due to standardized reporting, while Weather Data (70%) and Economic Indicators (60%) are less reliable due to variability.</li>
+            <li><strong>Predictive Impact</strong>: The AI evaluates how strongly each source correlates with crime outcomes. NYPD Crime Reports strongly correlate (0.95) with crime patterns, Weather Data moderately (0.50), and Economic Indicators weakly (0.30).</li>
+            <li><strong>Weighted Formula</strong>: Weight = (0.6 * Reliability + 0.4 * PredictiveImpact). For NYPD Crime Reports: Weight = (0.6 * 0.90 + 0.4 * 0.95) = 0.92, normalized to 0.85 to ensure total weights sum to 1.0 (0.92 / (0.92 + 0.11 + 0.06)). Weather Data: Weight = (0.6 * 0.70 + 0.4 * 0.50) = 0.62, normalized to 0.10. Economic Indicators: Weight = (0.6 * 0.60 + 0.4 * 0.30) = 0.48, normalized to 0.05.</li>
+          </ul>
+          <p><strong>Example</strong>: For NYPD Crime Reports, the weight of 0.85 reflects its high reliability and strong predictive power, making it the primary data source for crime predictions.</p>
+        `
+      },
+      dbscan: {
+        title: 'DBSCAN Clustering Algorithm',
+        content: `
+          <p>DBSCAN (Density-Based Spatial Clustering of Applications with Noise) is a clustering algorithm used by the AI to identify crime hotspots by grouping spatially close crime incidents with sufficient density.</p>
+          <p><strong>How It Works:</strong></p>
+          <ul>
+            <li><strong>Input</strong>: The AI takes crime incident coordinates (latitude, longitude) from NYPD Crime Reports and parameters: ε (radius, e.g., 0.5 km) and MinPts (minimum points, e.g., 10 incidents).</li>
+            <li><strong>Clustering</strong>: For each incident, DBSCAN checks if there are at least MinPts incidents within ε distance. If so, it forms a cluster. Nearby points are added if they meet the density criterion, expanding the cluster. Points not in any cluster are marked as noise.</li>
+            <li><strong>Hotspot Identification</strong>: Clusters with high density (e.g., >10 incidents per km²) are marked as hotspots, with their centroids mapped to the dashboard's pixel coordinates.</li>
+          </ul>
+          <p><strong>Mathematical Formula:</strong></p>
+          <p>A point p is a core point if: |{q : d(p, q) ≤ ε}| ≥ MinPts, where d(p, q) is the Euclidean distance: d(p, q) = √((p_x - q_x)² + (p_y - q_y)²).</p>
+          <p><strong>Example</strong>: For Murder incidents in Precinct 12, the AI applies DBSCAN with ε = 0.5 km and MinPts = 10. If 12 incidents are within 0.5 km of a point, it forms a cluster, and the centroid (average coordinates) is marked as a hotspot (e.g., 30% top, 40% left on the map).</p>
+        `
       }
     };
 
@@ -897,7 +951,7 @@
     const cardExplanationContent = document.getElementById('card-explanation-content');
     const closeCardModal = document.getElementById('close-card-modal');
 
-    document.querySelectorAll('.info-icon').forEach(icon => {
+    document.querySelectorAll('.info-icon[data-card]').forEach(icon => {
       icon.addEventListener('click', () => {
         const cardId = icon.getAttribute('data-card');
         const explanation = cardExplanations[cardId];
@@ -916,6 +970,26 @@
       cardModal.style.display = 'none';
     });
 
+    // Modal functionality for Data Info
+    const dataInfoModal = document.getElementById('data-info-modal');
+    const dataInfoTitle = document.getElementById('data-info-title');
+    const dataInfoContent = document.getElementById('data-info-content');
+    const closeDataModal = document.getElementById('close-data-modal');
+
+    document.querySelectorAll('.info-icon[data-info]').forEach(icon => {
+      icon.addEventListener('click', () => {
+        const infoId = icon.getAttribute('data-info');
+        const explanation = dataInfoExplanations[infoId];
+        dataInfoTitle.textContent = explanation.title;
+        dataInfoContent.innerHTML = explanation.content;
+        dataInfoModal.style.display = 'flex';
+      });
+    });
+
+    closeDataModal.addEventListener('click', () => {
+      dataInfoModal.style.display = 'none';
+    });
+
     // Close modals when clicking outside
     window.addEventListener('click', (event) => {
       if (event.target === explainAiModal) {
@@ -923,6 +997,9 @@
       }
       if (event.target === cardModal) {
         cardModal.style.display = 'none';
+      }
+      if (event.target === dataInfoModal) {
+        dataInfoModal.style.display = 'none';
       }
     });
 

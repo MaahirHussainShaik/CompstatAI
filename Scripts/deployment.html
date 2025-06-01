@@ -39,13 +39,6 @@
       font-size: 18px;
       margin-bottom: 10px;
     }
-    .transparency-section pre {
-      background-color: #2a2a2a;
-      padding: 10px;
-      border-radius: 4px;
-      font-size: 12px;
-      color: var(--text-dark);
-    }
     .transparency-section p {
       font-size: 12px;
       color: var(--text-dark);
@@ -121,6 +114,8 @@
       border-radius: 8px;
       padding: 20px;
       max-width: 500px;
+      max-height: 80vh;
+      overflow-y: auto;
       z-index: 1000;
       box-shadow: 0 4px 6px rgba(0,0,0,0.3);
     }
@@ -132,8 +127,19 @@
       font-size: 14px;
       margin-bottom: 10px;
     }
+    .popup textarea {
+      width: 100%;
+      padding: 8px;
+      border-radius: 4px;
+      border: 1px solid var(--border-dark);
+      background-color: #2a2a2a;
+      color: var(--text-dark);
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
     .popup button {
       margin-top: 10px;
+      margin-right: 10px;
     }
     .overlay {
       display: none;
@@ -160,19 +166,9 @@
     }
     .main-content {
       display: grid;
-      grid-template-columns: 2fr 1fr;
+      grid-template-columns: 1fr 1fr;
       gap: 15px;
       height: 100%;
-    }
-    .right-column {
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-    }
-    .officer-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 10px;
     }
   </style>
 </head>
@@ -200,38 +196,6 @@
     </div>
   </header>
 
-  <section>
-    <div class="card">
-      <div class="card-title">Officer Assignments</div>
-      <div class="officer-grid">
-        <div>
-          <p><strong>JD</strong></p>
-          <p>Officer John Doe</p>
-          <p>Badge: #7142</p>
-          <p>Unit: Patrol Car 12</p>
-          <p>Status: Available</p>
-          <p>Last Activity: Traffic stop 15 min ago</p>
-        </div>
-        <div>
-          <p><strong>MS</strong></p>
-          <p>Officer Maria Smith</p>
-          <p>Badge: #9821</p>
-          <p>Unit: K9 Unit 5</p>
-          <p>Status: On active call</p>
-          <p>Current Assignment: Burglary in progress</p>
-        </div>
-        <div>
-          <p><strong>TW</strong></p>
-          <p>Officer Tom Wilson</p>
-          <p>Badge: #3567</p>
-          <p>Unit: Detective Unit 3</p>
-          <p>Status: On duty (available soon)</p>
-          <p>Current Assignment: Finishing paperwork</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
   <section class="main-content">
     <div class="card">
       <div class="card-title">AI Deployment Recommendations</div>
@@ -244,8 +208,8 @@
         <p id="recommendation">Recommendation: 2 patrol units from 18:00-02:00</p>
         <p id="reason">Reason: Historical robbery pattern shows 73% increase during these hours</p>
         <canvas id="recommendationChart"></canvas>
-        <p><a href="#">Override recommendation</a></p>
-        <select>
+        <p><a href="#" id="overrideRecommendation">Override recommendation</a></p>
+        <select id="alternativeDeployment">
           <option>Alternative deployment:</option>
           <option>No change</option>
           <option>Reduce to 1 unit</option>
@@ -255,36 +219,24 @@
       </div>
       <button id="showRecExplanation">Explain</button>
     </div>
-    <div class="right-column">
-      <div class="card">
-        <div class="card-title">AI Deployment Plan</div>
-        <div class="graph-container">
-          <canvas id="aiPlanChart" class="graph"></canvas>
-        </div>
-        <div>
-          <button id="saveDeployment">Save Deployment</button>
-          <button id="showPlanExplanation">Explanation</button>
-        </div>
+    <div class="card">
+      <div class="card-title">AI Deployment Plan</div>
+      <select id="planAreaFilter">
+        <option value="financial">Financial District</option>
+        <option value="residential">Residential Zone</option>
+      </select>
+      <div class="graph-container">
+        <canvas id="aiPlanChart" class="graph"></canvas>
       </div>
-      <div class="card">
-        <div class="card-title">Resource Allocation</div>
-        <canvas id="resourceChart"></canvas>
-        <p style="font-size: 12px; color: #aaa;">Note: Higher allocations in certain suburbs may indicate potential bias. Review and adjust deployments to ensure equitable distribution.</p>
+      <div>
+        <button id="saveDeployment">Save Deployment</button>
+        <button id="showPlanExplanation">Explain</button>
       </div>
     </div>
   </section>
 
   <section class="transparency-section">
-    <h2>Future Predictions and Data Sources</h2>
-    <p>The AI generates future predictions for crime patterns and resource deployment based on the following process:</p>
-    <p><strong>Prediction Formula:</strong></p>
-    <p><strong>Predicted Crime Risk (PCR)</strong> = 0.5 × Historical Crime Rate (HCR) + 0.3 × Trend Momentum (TM) + 0.2 × Predictive Factors (PF)</p>
-    <p>
-      <strong>Historical Crime Rate (HCR)</strong>: Average crime incidents per 100,000 residents over the past 3 years (e.g., 12 robberies in Financial District).<br>
-      <strong>Trend Momentum (TM)</strong>: Rate of change in crime incidents over the selected period (e.g., 5% monthly increase in robberies).<br>
-      <strong>Predictive Factors (PF)</strong>: External variables like weather forecasts, economic projections, and community events (e.g., festivals increase foot traffic by 15%).<br>
-      Confidence is calculated using a Bayesian model, combining historical variance and predictive factor reliability (e.g., 85% confidence for 7-day predictions).
-    </p>
+    <h2>Data Sources</h2>
     <p><strong>Data Sources:</strong></p>
     <ul>
       <li>NYPD Historical Crime Reports (2018-2025): Primary source for crime data, weighted at 0.8.</li>
@@ -292,114 +244,104 @@
       <li>Economic Projections: Sourced from city economic reports, weighted at 0.1, correlating with property crimes.</li>
       <li>Community Feedback: Collected via surveys, influencing foot patrol recommendations.</li>
     </ul>
-    <p>Predictions are adjusted based on the selected suburb and time period (7, 14, or 30 days) in the top filter, enabling tailored deployment strategies.</p>
+    <p>Data is adjusted based on the selected suburb and time period (7, 14, or 30 days) in the top filter, enabling tailored deployment strategies.</p>
   </section>
 
   <div class="overlay" id="overlay"></div>
   <div class="popup" id="recExplanationPopup">
-    <h3>Recommendation Formula Explanation</h3>
-    <p>The AI deployment recommendation is calculated using a weighted risk score formula:</p>
-    <p><strong>Risk Score (RS)</strong> = 0.6 × Crime Rate (CR) + 0.25 × Historical Trend (HT) + 0.15 × External Factors (EF)</p>
+    <h3>Recommendation Explanation</h3>
+    <p><strong>How Confidence Level is Calculated:</strong></p>
+    <p>Confidence is calculated using a Bayesian model that evaluates the variance in historical crime data and the reliability of predictive factors. The model computes a posterior probability distribution, where the confidence level (e.g., 89%) reflects the likelihood that the predicted crime pattern holds true, based on historical NYPD crime data variance and external factor consistency.</p>
+    <p><strong>How the Graph is Predicted:</strong></p>
+    <p>The graph displays predicted crime incidents over the selected time period (7, 14, or 30 days). Predictions are generated by analyzing historical crime patterns from NYPD Historical Crime Reports (2018-2025, available at <a href="https://data.cityofnewyork.us/Public-Safety/NYPD-Complaint-Data-Historic/qgea-i56i">NYPD Crime Data</a>), combined with external variables like weather forecasts and community feedback. The model uses a time-series forecasting approach to estimate crime incidents.</p>
+    <p><strong>Data Used:</strong></p>
+    <ul>
+      <li>NYPD Historical Crime Reports (2018-2025): Primary source for crime data, weighted at 0.8.</li>
+      <li>Weather Forecasts: Sourced from NOAA, weighted at 0.1.</li>
+      <li>Economic Projections: Sourced from city economic reports, weighted at 0.1.</li>
+      <li>Community Feedback: Collected via surveys, influencing predictions.</li>
+    </ul>
+    <p><strong>Mathematical Function for Graph Prediction:</strong></p>
+    <p><strong>Predicted Crime Incidents (PCI)</strong> = 0.6 × HCR + 0.3 × TM + 0.1 × EF</p>
     <p>
-      <strong>Crime Rate (CR)</strong>: Normalized crime incidents per 100,000 residents (e.g., 15 robberies in Financial District for Bronx - Precinct 12).<br>
-      <strong>Historical Trend (HT)</strong>: Percentage increase in crime during specific hours (e.g., 73% robbery increase from 18:00-02:00 in Financial District).<br>
-      <strong>External Factors (EF)</strong>: Weather and economic indicators (e.g., rainy days increase property crimes by 10%).<br>
-      Confidence is derived from the variance in historical data, with 89% indicating high reliability in the Financial District recommendation.
+      <strong>HCR (Historical Crime Rate)</strong>: Average incidents per 100,000 residents over 3 years.<br>
+      <strong>TM (Trend Momentum)</strong>: Rate of change in incidents over the selected period.<br>
+      <strong>EF (External Factors)</strong>: Weighted impact of weather, economic, and community data.<br>
+      Example: For Financial District, PCI = 0.6 × 15 + 0.3 × 5 + 0.1 × 2 = 10.7 incidents (normalized for graph).
     </p>
     <button id="closeRecPopup">Close</button>
   </div>
 
   <div class="popup" id="planExplanationPopup">
-    <h3>AI Deployment Plan Formula Explanation</h3>
-    <p>The AI deployment plan is derived from an optimization model balancing risk and resources:</p>
-    <p><strong>Deployment Score (DS)</strong> = 0.7 × Risk Score (RS) + 0.3 × Resource Availability (RA)</p>
+    <h3>AI Deployment Plan Explanation</h3>
+    <p><strong>Data Used:</strong></p>
+    <ul>
+      <li>NYPD Historical Crime Reports (2018-2025): Primary source for crime data, weighted at 0.8, accessed via <a href="https://data.cityofnewyork.us/Public-Safety/NYPD-Complaint-Data-Historic/qgea-i56i">NYPD Crime Data</a>.</li>
+      <li>Resource Availability Data: Internal precinct data on available patrol units and foot patrols, updated daily.</li>
+      <li>Community Feedback: Surveys indicating community preferences for patrol types, weighted at 0.2.</li>
+    </ul>
+    <p><strong>Mathematical Function for Deployment Plan:</strong></p>
+    <p><strong>Deployment Allocation (DA)</strong> = 0.7 × PCR + 0.3 × RA</p>
     <p>
-      <strong>Risk Score (RS)</strong>: As above, calculated per area (e.g., Financial District RS = 0.6 × 15 + 0.25 × 73 + 0.15 × 10 = 25.75).<br>
-      <strong>Resource Availability (RA)</strong>: Available units normalized by precinct capacity (e.g., 10 patrol units available out of 12 in Precinct 12).<br>
-      The plan optimizes deployments to maximize coverage while minimizing bias, resulting in recommendations like 2 patrol units in Financial District.
+      <strong>PCR (Predicted Crime Risk)</strong>: Derived from historical crime rates and trends (e.g., 15 incidents per 100,000 residents in Financial District).<br>
+      <strong>RA (Resource Availability)</strong>: Normalized count of available units (e.g., 10 patrol units out of 12 in Precinct 12).<br>
+      Example: For Financial District, DA = 0.7 × 15 + 0.3 × 10 = 13.5, resulting in 2 patrol units allocated.
     </p>
     <button id="closePlanPopup">Close</button>
+  </div>
+
+  <div class="popup" id="overridePopup">
+    <h3>Override Recommendation</h3>
+    <p>Please provide feedback and an explanation for overriding the AI recommendation to address potential bias or other concerns:</p>
+    <textarea id="overrideFeedback" rows="5" placeholder="Enter your feedback and explanation here..."></textarea>
+    <button id="submitOverride">Submit</button>
+    <button id="closeOverridePopup">Cancel</button>
   </div>
 
   <script>
     // Data for AI Deployment Recommendations
     const recommendationData = {
       financial: {
-        confidence: '89% confidence',
-        recommendation: '2 patrol units from 18:00-02:00',
-        reason: 'Historical robbery pattern shows 73% increase during these hours',
-        chartData: [10, 15, 25, 30, 20, 10],
-        chartLabels: ['16:00', '18:00', '20:00', '22:00', '00:00', '02:00'],
-        chartLabel: 'Robbery Incidents'
+        confidence: { 7: '89% confidence', 14: '85% confidence', 30: '80% confidence' },
+        recommendation: { 7: '2 patrol units from 18:00-02:00', 14: '2 patrol units from 18:00-02:00', 30: '3 patrol units from 18:00-02:00' },
+        reason: { 7: 'Historical robbery pattern shows 73% increase during these hours', 14: 'Robbery trend persists with 70% increase', 30: 'Long-term data suggests elevated risk' },
+        chartData: { 7: [10, 12, 15, 14, 13, 11, 10], 14: [20, 22, 25, 24, 23, 21, 20, 19, 18, 17, 16, 15, 14, 13], 30: [30, 32, 35, 34, 33, 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7] },
+        chartLabels: { 7: ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 6', 'Day 7'], 14: ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 6', 'Day 7', 'Day 8', 'Day 9', 'Day 10', 'Day 11', 'Day 12', 'Day 13', 'Day 14'], 30: ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 6', 'Day 7', 'Day 8', 'Day 9', 'Day 10', 'Day 11', 'Day 12', 'Day 13', 'Day 14', 'Day 15', 'Day 16', 'Day 17', 'Day 18', 'Day 19', 'Day 20', 'Day 21', 'Day 22', 'Day 23', 'Day 24', 'Day 25', 'Day 26', 'Day 27', 'Day 28', 'Day 29', 'Day 30'] },
+        chartLabel: 'Predicted Crime Incidents'
       },
       residential: {
-        confidence: '76% confidence',
-        recommendation: 'Foot patrol rotation from 12:00-20:00',
-        reason: 'Community feedback indicates need for visible presence',
-        chartData: [5, 8, 12, 15, 10, 7],
-        chartLabels: ['10:00', '12:00', '14:00', '16:00', '18:00', '20:00'],
-        chartLabel: 'Community Feedback'
+        confidence: { 7: '76% confidence', 14: '72% confidence', 30: '68% confidence' },
+        recommendation: { 7: 'Foot patrol rotation from 12:00-20:00', 14: 'Foot patrol rotation from 12:00-20:00', 30: 'Foot patrol rotation from 10:00-22:00' },
+        reason: { 7: 'Community feedback indicates need for visible presence', 14: 'Community feedback suggests continued need for patrols', 30: 'Long-term community surveys indicate increased foot traffic' },
+        chartData: { 7: [5, 6, 8, 7, 6, 5, 4], 14: [10, 11, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1], 30: [15, 16, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10] },
+        chartLabels: { 7: ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 6', 'Day 7'], 14: ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 6', 'Day 7', 'Day 8', 'Day 9', 'Day 10', 'Day 11', 'Day 12', 'Day 13', 'Day 14'], 30: ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 6', 'Day 7', 'Day 8', 'Day 9', 'Day 10', 'Day 11', 'Day 12', 'Day 13', 'Day 14', 'Day 15', 'Day 16', 'Day 17', 'Day 18', 'Day 19', 'Day 20', 'Day 21', 'Day 22', 'Day 23', 'Day 24', 'Day 25', 'Day 26', 'Day 27', 'Day 28', 'Day 29', 'Day 30'] },
+        chartLabel: 'Predicted Community Feedback'
       }
     };
 
-    // Resource Allocation Data
-    const resourceData = {
-      all: {
-        patrol: [8, 10, 12],
-        detective: [2, 3, 4],
-        community: [5, 6, 8]
-      },
+    // Data for AI Deployment Plan
+    const planData = {
       financial: {
-        patrol: [10, 12, 14],
-        detective: [3, 4, 5],
-        community: [4, 5, 7]
+        patrol: [2, 0],
+        foot: [0, 2],
+        labels: ['Patrol Units', 'Foot Patrols']
       },
       residential: {
-        patrol: [6, 8, 10],
-        detective: [1, 2, 3],
-        community: [6, 7, 9]
+        patrol: [1, 2],
+        foot: [2, 0],
+        labels: ['Patrol Units', 'Foot Patrols']
       }
     };
-
-    // Resource Allocation Chart
-    const resourceCtx = document.getElementById('resourceChart').getContext('2d');
-    let resourceChart = new Chart(resourceCtx, {
-      type: 'bar',
-      data: {
-        labels: ['Option 1', 'Option 2', 'Option 3'],
-        datasets: [
-          {
-            label: 'Patrol Units',
-            data: resourceData.all.patrol,
-            backgroundColor: '#e74c3c',
-          },
-          {
-            label: 'Detective Teams',
-            data: resourceData.all.detective,
-            backgroundColor: '#fcc419',
-          },
-          {
-            label: 'Community Officers',
-            data: resourceData.all.community,
-            backgroundColor: '#51cf66',
-          }
-        ]
-      },
-      options: {
-        scales: { y: { beginAtZero: true } },
-        plugins: { legend: { display: true } }
-      }
-    });
 
     // AI Deployment Recommendations Chart
     const recommendationCtx = document.getElementById('recommendationChart').getContext('2d');
     let recommendationChart = new Chart(recommendationCtx, {
       type: 'line',
       data: {
-        labels: recommendationData.financial.chartLabels,
+        labels: recommendationData.financial.chartLabels['7'],
         datasets: [{
           label: recommendationData.financial.chartLabel,
-          data: recommendationData.financial.chartData,
+          data: recommendationData.financial.chartData['7'],
           borderColor: '#e74c3c',
           fill: false
         }]
@@ -410,42 +352,21 @@
       }
     });
 
-    // Area Filter for AI Deployment Recommendations
-    document.getElementById('areaFilter').addEventListener('change', function() {
-      const area = this.value;
-      document.getElementById('confidence').textContent = recommendationData[area].confidence;
-      document.getElementById('recommendation').textContent = 'Recommendation: ' + recommendationData[area].recommendation;
-      document.getElementById('reason').textContent = 'Reason: ' + recommendationData[area].reason;
-      recommendationChart.data.labels = recommendationData[area].chartLabels;
-      recommendationChart.data.datasets[0].label = recommendationData[area].chartLabel;
-      recommendationChart.data.datasets[0].data = recommendationData[area].chartData;
-      recommendationChart.update();
-    });
-
-    // Suburb Filter for Resource Allocation
-    document.getElementById('suburbFilter').addEventListener('change', function() {
-      const suburb = this.value === 'bronx12' ? 'financial' : 'residential'; // Map precincts to areas for demo
-      resourceChart.data.datasets[0].data = resourceData[suburb].patrol;
-      resourceChart.data.datasets[1].data = resourceData[suburb].detective;
-      resourceChart.data.datasets[2].data = resourceData[suburb].community;
-      resourceChart.update();
-    });
-
-    // AI Plan Chart
+    // AI Deployment Plan Chart
     const aiPlanCtx = document.getElementById('aiPlanChart').getContext('2d');
-    new Chart(aiPlanCtx, {
+    let aiPlanChart = new Chart(aiPlanCtx, {
       type: 'bar',
       data: {
         labels: ['Financial District', 'Residential Zone'],
         datasets: [
           {
             label: 'Patrol Units',
-            data: [2, 1],
+            data: planData.financial.patrol,
             backgroundColor: '#e74c3c',
           },
           {
             label: 'Foot Patrols',
-            data: [0, 2],
+            data: planData.financial.foot,
             backgroundColor: '#51cf66',
           }
         ]
@@ -454,6 +375,57 @@
         scales: { y: { beginAtZero: true } },
         plugins: { legend: { display: true } }
       }
+    });
+
+    // Area Filter for AI Deployment Recommendations
+    document.getElementById('areaFilter').addEventListener('change', function() {
+      const area = this.value;
+      const days = document.getElementById('dayFilter').value;
+      document.getElementById('confidence').textContent = recommendationData[area].confidence[days];
+      document.getElementById('recommendation').textContent = 'Recommendation: ' + recommendationData[area].recommendation[days];
+      document.getElementById('reason').textContent = 'Reason: ' + recommendationData[area].reason[days];
+      recommendationChart.data.labels = recommendationData[area].chartLabels[days];
+      recommendationChart.data.datasets[0].label = recommendationData[area].chartLabel;
+      recommendationChart.data.datasets[0].data = recommendationData[area].chartData[days];
+      recommendationChart.update();
+    });
+
+    // Day Filter for AI Deployment Recommendations
+    document.getElementById('dayFilter').addEventListener('change', function() {
+      const days = this.value;
+      const area = document.getElementById('areaFilter').value;
+      document.getElementById('confidence').textContent = recommendationData[area].confidence[days];
+      document.getElementById('recommendation').textContent = 'Recommendation: ' + recommendationData[area].recommendation[days];
+      document.getElementById('reason').textContent = 'Reason: ' + recommendationData[area].reason[days];
+      recommendationChart.data.labels = recommendationData[area].chartLabels[days];
+      recommendationChart.data.datasets[0].data = recommendationData[area].chartData[days];
+      recommendationChart.update();
+    });
+
+    // Suburb Filter for Both Charts
+    document.getElementById('suburbFilter').addEventListener('change', function() {
+      const suburb = this.value === 'bronx12' ? 'financial' : 'residential';
+      const days = document.getElementById('dayFilter').value;
+      document.getElementById('areaFilter').value = suburb;
+      document.getElementById('planAreaFilter').value = suburb;
+      document.getElementById('confidence').textContent = recommendationData[suburb].confidence[days];
+      document.getElementById('recommendation').textContent = 'Recommendation: ' + recommendationData[suburb].recommendation[days];
+      document.getElementById('reason').textContent = 'Reason: ' + recommendationData[suburb].reason[days];
+      recommendationChart.data.labels = recommendationData[suburb].chartLabels[days];
+      recommendationChart.data.datasets[0].label = recommendationData[suburb].chartLabel;
+      recommendationChart.data.datasets[0].data = recommendationData[suburb].chartData[days];
+      recommendationChart.update();
+      aiPlanChart.data.datasets[0].data = planData[suburb].patrol;
+      aiPlanChart.data.datasets[1].data = planData[suburb].foot;
+      aiPlanChart.update();
+    });
+
+    // Area Filter for AI Deployment Plan
+    document.getElementById('planAreaFilter').addEventListener('change', function() {
+      const area = this.value;
+      aiPlanChart.data.datasets[0].data = planData[area].patrol;
+      aiPlanChart.data.datasets[1].data = planData[area].foot;
+      aiPlanChart.update();
     });
 
     // Popup functionality for Recommendations
@@ -477,6 +449,26 @@
     document.getElementById('closePlanPopup').addEventListener('click', () => {
       overlay.style.display = 'none';
       planPopup.style.display = 'none';
+    });
+
+    // Popup functionality for Override Recommendation
+    const overridePopup = document.getElementById('overridePopup');
+    document.getElementById('overrideRecommendation').addEventListener('click', (e) => {
+      e.preventDefault();
+      overlay.style.display = 'block';
+      overridePopup.style.display = 'block';
+    });
+    document.getElementById('closeOverridePopup').addEventListener('click', () => {
+      overlay.style.display = 'none';
+      overridePopup.style.display = 'none';
+      document.getElementById('overrideFeedback').value = '';
+    });
+    document.getElementById('submitOverride').addEventListener('click', () => {
+      const feedback = document.getElementById('overrideFeedback').value;
+      console.log('Override feedback submitted:', feedback); // Placeholder for actual submission logic
+      overlay.style.display = 'none';
+      overridePopup.style.display = 'none';
+      document.getElementById('overrideFeedback').value = '';
     });
   </script>
 </body>

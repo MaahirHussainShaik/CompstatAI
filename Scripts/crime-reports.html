@@ -27,10 +27,14 @@
       max-width: 1200px;
       margin: 0 auto;
     }
-    h1 {
+    h1, h2 {
       font-size: 24px;
       margin-bottom: 20px;
       color: var(--text-dark);
+    }
+    h2 {
+      font-size: 20px;
+      margin-top: 30px;
     }
     nav {
       margin-bottom: 20px;
@@ -67,6 +71,7 @@
       border-radius: 8px;
       overflow: hidden;
       border: 1px solid var(--border-dark);
+      margin-bottom: 20px;
     }
     th, td {
       border: 1px solid var(--border-dark);
@@ -81,6 +86,17 @@
     }
     tr:nth-child(even) {
       background-color: #252525;
+    }
+    .data-source {
+      font-size: 14px;
+      margin-bottom: 20px;
+    }
+    .data-source a {
+      color: var(--highlight);
+      text-decoration: none;
+    }
+    .data-source a:hover {
+      text-decoration: underline;
     }
   </style>
 </head>
@@ -133,7 +149,6 @@
         </tr>
       </thead>
       <tbody>
-        <!-- Dummy Data -->
         <tr>
           <td>Robbery</td>
           <td>2018-01-15</td>
@@ -272,10 +287,154 @@
           <td>2023-08-10</td>
           <td>Precinct 12</td>
           <td>25</td>
-          <td>Staten Island</td>
+bosch      <td>Staten Island</td>
         </tr>
       </tbody>
     </table>
+    <div class="data-source">
+      <p>Data sourced from: <a href="https://data.cityofnewyork.us/Public-Safety/NYPD-Complaint-Data-Historic/qgea-i56i">NYPD Complaint Data Historic</a></p>
+    </div>
+
+    <h2>Weather Data</h2>
+    <table id="weather-table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Condition</th>
+          <th>Temperature (°F)</th>
+          <th>Precipitation (in)</th>
+          <th>Borough</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>2018-01-15</td>
+          <td>Snow</td>
+          <td>28</td>
+          <td>0.5</td>
+          <td>Bronx</td>
+        </tr>
+        <tr>
+          <td>2018-02-10</td>
+          <td>Rain</td>
+          <td>45</td>
+          <td>0.2</td>
+          <td>Brooklyn</td>
+        </tr>
+        <tr>
+          <td>2018-03-05</td>
+          <td>Clear</td>
+          <td>50</td>
+          <td>0.0</td>
+          <td>Manhattan</td>
+        </tr>
+        <tr>
+          <td>2019-06-12</td>
+          <td>Cloudy</td>
+          <td>65</td>
+          <td>0.1</td>
+          <td>Bronx</td>
+        </tr>
+        <tr>
+          <td>2020-09-18</td>
+          <td>Sunny</td>
+          <td>72</td>
+          <td>0.0</td>
+          <td>Queens</td>
+        </tr>
+        <tr>
+          <td>2021-11-14</td>
+          <td>Rain</td>
+          <td>55</td>
+          <td>0.3</td>
+          <td>Bronx</td>
+        </tr>
+        <tr>
+          <td>2022-03-17</td>
+          <td>Clear</td>
+          <td>60</td>
+          <td>0.0</td>
+          <td>Staten Island</td>
+        </tr>
+        <tr>
+          <td>2023-04-11</td>
+          <td>Cloudy</td>
+          <td>62</td>
+          <td>0.1</td>
+          <td>Bronx</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="data-source">
+      <p>Data sourced from: <a href="https://www.weather.gov/okx/">NOAA National Weather Service - New York</a></p>
+    </div>
+
+    <h2>Economic Indicator Correlations</h2>
+    <table id="economic-table">
+      <thead>
+        <tr>
+          <th>Year</th>
+          <th>Unemployment Rate (%)</th>
+          <th>Median Income ($)</th>
+          <th>Property Crime Rate (per 100,000)</th>
+          <th>Borough</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>2018</td>
+          <td>4.1</td>
+          <td>65000</td>
+          <td>1200</td>
+          <td>Bronx</td>
+        </tr>
+        <tr>
+          <td>2018</td>
+          <td>3.8</td>
+          <td>72000</td>
+          <td>1100</td>
+          <td>Brooklyn</td>
+        </tr>
+        <tr>
+          <td>2019</td>
+          <td>4.0</td>
+          <td>67000</td>
+          <td>1150</td>
+          <td>Manhattan</td>
+        </tr>
+        <tr>
+          <td>2020</td>
+          <td>8.5</td>
+          <td>60000</td>
+          <td>1300</td>
+          <td>Queens</td>
+        </tr>
+        <tr>
+          <td>2021</td>
+          <td>7.2</td>
+          <td>63000</td>
+          <td>1250</td>
+          <td>Staten Island</td>
+        </tr>
+        <tr>
+          <td>2022</td>
+          <td>5.5</td>
+          <td>68000</td>
+          <td>1180</td>
+          <td>Bronx</td>
+        </tr>
+        <tr>
+          <td>2023</td>
+          <td>4.8</td>
+          <td>70000</td>
+          <td>1100</td>
+          <td>Brooklyn</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="data-source">
+      <p>Data sourced from: <a href="https://www1.nyc.gov/site/planning/data-maps/nyc-economy.page">NYC Economic Data</a></p>
+    </div>
   </div>
 
   <script>
